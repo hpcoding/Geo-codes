@@ -6,164 +6,225 @@
 <title>GEODIS Badge Generator — Oshawa 6011</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAl0gzWFDBVbEzm2blY_qBDARjo8YUSLVQ",
+  authDomain: "geo-barcodes.firebaseapp.com",
+  projectId: "geo-barcodes",
+  storageBucket: "geo-barcodes.firebasestorage.app",
+  messagingSenderId: "65697532545",
+  appId: "1:65697532545:web:cb0e43c7ab0d7c814edb80",
+  measurementId: "G-KECQG6Z6XT"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const COL = 'employees';
+
+// Expose db helpers to global scope
+window._db = {
+  async save(emp) {
+    return await addDoc(collection(db, COL), emp);
+  },
+  async delete(id) {
+    await deleteDoc(doc(db, COL, id));
+  },
+  async update(id, data) {
+    await updateDoc(doc(db, COL, id), data);
+  },
+  listenAll(cb) {
+    const q = query(collection(db, COL), orderBy('savedAt', 'desc'));
+    return onSnapshot(q, snap => {
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      cb(docs);
+    }, err => {
+      console.error('Firestore listen error:', err);
+      cb([]);
+    });
+  }
+};
+
+// Signal that Firebase is ready
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebase-ready'));
+</script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --blue: #1A4FA0;
-    --blue-dark: #0f3070;
-    --blue-light: #e8eef9;
-    --bg: #eef1f8;
-    --surface: #ffffff;
-    --surface2: #f4f6fb;
-    --border: rgba(26,79,160,0.12);
-    --text: #111827;
-    --muted: #5a6a85;
-    --subtle: #98a6be;
-    --r: 12px;
-    --rs: 8px;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #1A4FA0; --blue-dark: #0f3070; --blue-light: #e8eef9;
+  --bg: #eef1f8; --surface: #fff; --surface2: #f4f6fb;
+  --border: rgba(26,79,160,0.13); --text: #111827;
+  --muted: #5a6a85; --subtle: #98a6be;
+  --green: #16a34a; --green-light: #dcfce7;
+  --red: #dc2626; --red-light: #fee2e2;
+  --r: 12px; --rs: 8px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-  /* ── HEADER — always deep GEODIS blue ── */
-  header {
-    background: #1A4FA0;
-    color: #fff;
-    padding: 0 1.5rem;
-    display: flex; align-items: center; gap: 10px;
-    height: 56px; position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 16px rgba(15,48,112,0.35);
-  }
-  .hlogo svg { width: 32px; height: 32px; }
-  .hbrand { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #fff; }
-  .hdiv { width: 1px; height: 22px; background: rgba(255,255,255,0.3); margin: 0 6px; }
-  .htitle { font-size: 12px; color: rgba(255,255,255,0.72); font-weight: 400; }
-  .hspace { flex: 1; }
-  .hbtn {
-    display: flex; align-items: center; gap: 6px; padding: 7px 16px;
-    border-radius: 6px; background: rgba(255,255,255,0.18);
-    color: #fff; border: 1px solid rgba(255,255,255,0.3);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: background 0.15s;
-  }
-  .hbtn:hover { background: rgba(255,255,255,0.28); }
+/* HEADER */
+header {
+  background: #1A4FA0; color: #fff;
+  padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
+  height: 56px; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 16px rgba(15,48,112,0.35);
+}
+.hlogo svg { width: 32px; height: 32px; }
+.hbrand { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; }
+.hdiv { width: 1px; height: 22px; background: rgba(255,255,255,0.3); margin: 0 6px; }
+.htitle { font-size: 12px; color: rgba(255,255,255,0.72); }
+.hspace { flex: 1; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.live { background: #4ade80; }
+.sync-dot.err  { background: #f87171; }
+.sync-label { font-size: 11px; color: rgba(255,255,255,0.65); margin-right: 8px; }
+.hbtn {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border-radius: 6px; background: rgba(255,255,255,0.18);
+  color: #fff; border: 1px solid rgba(255,255,255,0.3);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: background 0.15s; white-space: nowrap;
+}
+.hbtn:hover { background: rgba(255,255,255,0.28); }
+.hbtn.success { background: rgba(22,163,74,0.3); border-color: rgba(100,220,130,0.4); }
+.hbtn.success:hover { background: rgba(22,163,74,0.45); }
 
-  /* ── LAYOUT ── */
-  .layout { display: grid; grid-template-columns: 330px 1fr; min-height: calc(100vh - 56px); }
+/* TOP TABS */
+.top-tabs { display: flex; height: 40px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 100; }
+.ttab { flex: 1; max-width: 180px; padding: 0 1rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.ttab.on { color: var(--blue); border-bottom-color: var(--blue); }
+.ttab-badge { background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 7px; }
 
-  .sidebar {
-    background: var(--surface); border-right: 1px solid var(--border);
-    padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto;
-  }
-  .sec { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.1rem; }
-  .sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.85rem; }
+/* PAGES */
+.page { display: none; }
+.page.on { display: block; }
 
-  .tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
-  .tab { flex: 1; padding: 6px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .tab.on { background: white; color: var(--blue); box-shadow: 0 1px 4px rgba(26,79,160,0.12); }
+/* CREATE LAYOUT */
+.create-layout { display: grid; grid-template-columns: 330px 1fr; min-height: calc(100vh - 96px); }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+.sec { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.1rem; }
+.sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.85rem; }
 
-  .fg { margin-bottom: 0.75rem; }
-  .fg:last-child { margin-bottom: 0; }
-  .fg label { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
-  .fg input, .fg textarea {
-    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--rs);
-    font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text);
-    background: white; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .fg input:focus, .fg textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
-  .fg textarea { resize: vertical; min-height: 90px; font-family: 'DM Mono', monospace; font-size: 12px; }
-  .hint { font-size: 11px; color: var(--subtle); margin-top: 3px; line-height: 1.5; }
+.tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
+.tab { flex: 1; padding: 6px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.tab.on { background: white; color: var(--blue); box-shadow: 0 1px 4px rgba(26,79,160,0.12); }
 
-  /* ── LOGO SECTION ── */
-  .logo-zone {
-    border: 1.5px dashed rgba(26,79,160,0.25); border-radius: var(--rs);
-    padding: 16px; text-align: center; cursor: pointer;
-    background: white; position: relative; transition: all 0.15s;
-  }
-  .logo-zone:hover { border-color: var(--blue); background: var(--blue-light); }
-  .logo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .logo-zone-icon { font-size: 22px; margin-bottom: 4px; }
-  .logo-zone-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.fg { margin-bottom: 0.75rem; }
+.fg:last-child { margin-bottom: 0; }
+.fg label { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+.fg input, .fg textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--rs); font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+.fg input:focus, .fg textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
+.fg textarea { resize: vertical; min-height: 90px; font-family: 'DM Mono', monospace; font-size: 12px; }
+.hint { font-size: 11px; color: var(--subtle); margin-top: 3px; line-height: 1.5; }
 
-  .logo-set-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border: 1px solid var(--border); border-radius: var(--rs); }
-  .logo-set-row img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; border: 1px solid var(--border); background: #f9f9f9; }
-  .logo-set-info { flex: 1; min-width: 0; }
-  .logo-set-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .logo-set-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
-  .logo-change-btn { font-size: 11px; color: var(--blue); cursor: pointer; background: var(--blue-light); border: none; border-radius: 4px; padding: 4px 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; white-space: nowrap; }
-  .logo-change-btn:hover { background: #d0ddf5; }
-  .logo-remove-btn { font-size: 11px; color: #c0392b; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; margin-top: 2px; display: block; }
-  .logo-remove-btn:hover { text-decoration: underline; }
+.logo-zone { border: 1.5px dashed rgba(26,79,160,0.25); border-radius: var(--rs); padding: 16px; text-align: center; cursor: pointer; background: white; position: relative; transition: all 0.15s; }
+.logo-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+.logo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.logo-zone-icon { font-size: 22px; margin-bottom: 4px; }
+.logo-zone-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.logo-set-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border: 1px solid var(--border); border-radius: var(--rs); }
+.logo-set-row img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; border: 1px solid var(--border); background: #f9f9f9; }
+.logo-set-info { flex: 1; min-width: 0; }
+.logo-set-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logo-set-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+.logo-change-btn { font-size: 11px; color: var(--blue); cursor: pointer; background: var(--blue-light); border: none; border-radius: 4px; padding: 4px 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; white-space: nowrap; }
+.logo-change-btn:hover { background: #d0ddf5; }
+.logo-remove-btn { font-size: 11px; color: #c0392b; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; margin-top: 2px; display: block; }
+.override-note { font-size: 11px; color: var(--muted); background: var(--blue-light); border-radius: 6px; padding: 7px 10px; line-height: 1.5; margin-top: 4px; }
 
-  /* per-badge logo override (bulk) */
-  .override-note { font-size: 11px; color: var(--muted); background: var(--blue-light); border-radius: 6px; padding: 7px 10px; line-height: 1.5; margin-top: 4px; }
+.save-btn { width: 100%; padding: 10px; background: var(--green); color: white; border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+.save-btn:hover { background: #15803d; }
+.save-btn:disabled { background: #86efac; cursor: not-allowed; }
+.gen-btn { width: 100%; padding: 10px; background: var(--blue); color: white; border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; margin-bottom: 8px; }
+.gen-btn:hover { background: var(--blue-dark); }
 
-  .gen-btn {
-    width: 100%; padding: 10px; background: var(--blue); color: white;
-    border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s;
-  }
-  .gen-btn:hover { background: var(--blue-dark); }
+/* PREVIEW */
+.preview-area { padding: 2rem; overflow-y: auto; background: var(--bg); background-image: radial-gradient(circle at 1px 1px, rgba(26,79,160,0.07) 1px, transparent 0); background-size: 20px 20px; }
+.preview-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
+.preview-hd h2 { font-size: 15px; font-weight: 600; }
+.preview-hd span { font-size: 12px; color: var(--muted); }
+.cards-grid { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.card-lbl { font-size: 11px; color: var(--subtle); font-family: 'DM Mono', monospace; }
 
-  /* ── PREVIEW ── */
-  .preview {
-    padding: 2rem; overflow-y: auto; background: var(--bg);
-    background-image: radial-gradient(circle at 1px 1px, rgba(26,79,160,0.07) 1px, transparent 0);
-    background-size: 20px 20px;
-  }
-  .preview-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-  .preview-hd h2 { font-size: 15px; font-weight: 600; color: var(--text); }
-  .preview-hd span { font-size: 12px; color: var(--muted); }
-  .cards-grid { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
-  .card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .card-lbl { font-size: 11px; color: var(--subtle); font-family: 'DM Mono', monospace; }
+/* SAVED PAGE */
+.saved-page { padding: 2rem; min-height: calc(100vh - 96px); }
+.saved-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.saved-toolbar h2 { font-size: 16px; font-weight: 600; flex: 1; }
+.action-btn { display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: var(--rs); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border); transition: all 0.15s; background: white; color: var(--text); white-space: nowrap; }
+.action-btn:hover { background: var(--surface2); }
+.action-btn.blue { background: var(--blue); color: white; border-color: var(--blue); }
+.action-btn.blue:hover { background: var(--blue-dark); }
+.action-btn.red { color: var(--red); border-color: rgba(220,38,38,0.25); }
+.action-btn.red:hover { background: var(--red-light); }
+.search-box { padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--rs); font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; width: 200px; }
+.search-box:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
 
-  .pill { display: inline-flex; align-items: center; justify-content: center; background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 11px; font-weight: 600; padding: 1px 9px; margin-left: 6px; }
-  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; }
-  .empty-state .ei { font-size: 40px; margin-bottom: 1rem; opacity: 0.35; }
+.emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.emp-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r); padding: 14px; cursor: pointer; transition: all 0.15s; position: relative; user-select: none; }
+.emp-card:hover { border-color: rgba(26,79,160,0.35); box-shadow: 0 2px 12px rgba(26,79,160,0.1); }
+.emp-card.selected { border-color: var(--blue); background: var(--blue-light); box-shadow: 0 0 0 2px rgba(26,79,160,0.15); }
+.emp-card-check { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; transition: all 0.15s; }
+.emp-card.selected .emp-card-check { background: var(--blue); border-color: var(--blue); }
+.emp-card-check::after { content: '✓'; display: none; }
+.emp-card.selected .emp-card-check::after { display: block; }
+.emp-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; margin-bottom: 10px; font-family: Arial, sans-serif; }
+.emp-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.emp-uid { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+.emp-site { font-size: 11px; color: var(--subtle); margin-top: 4px; }
+.emp-date { font-size: 10px; color: var(--subtle); margin-top: 6px; }
+.emp-actions { display: flex; gap: 6px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.emp-act-btn { flex: 1; padding: 5px 0; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.emp-act-btn:hover { background: var(--blue-light); color: var(--blue); border-color: rgba(26,79,160,0.3); }
+.emp-act-btn.del:hover { background: var(--red-light); color: var(--red); border-color: rgba(220,38,38,0.3); }
 
-  /* ── BADGE: 6cm × 8cm portrait ── */
-  .badge {
-    width: 227px; height: 302px;
-    background: #fff; border: 2px solid #111; border-radius: 5px;
-    padding: 18px 14px 12px;
-    display: flex; flex-direction: column; align-items: center;
-    font-family: Arial, Helvetica, sans-serif;
-    box-shadow: 0 6px 28px rgba(26,79,160,0.15), 0 1px 4px rgba(0,0,0,0.08);
-    flex-shrink: 0; position: relative;
-  }
-  .badge::before {
-    content: ''; position: absolute;
-    top: -1px; left: 50%; transform: translateX(-50%);
-    width: 34px; height: 12px; background: #c8c8c8;
-    border-radius: 0 0 20px 20px; border: 1.5px solid #aaa; border-top: none;
-  }
-  .badge-header { display: flex; align-items: flex-start; gap: 8px; width: 100%; margin-bottom: 8px; }
-  .badge-logo-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-  .badge-logo-block img, .badge-logo-block svg { width: 42px; height: 42px; object-fit: contain; }
-  .badge-brand { display: none; }
-  .badge-title-block { flex: 1; padding-top: 4px; }
-  .badge-title { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
-  .badge-subtitle { font-size: 9px; color: #444; margin-top: 3px; line-height: 1.4; }
-  .badge-rule { width: 100%; height: 1px; background: #ddd; margin: 4px 0 10px; }
-  .badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.2; width: 100%; margin-bottom: 14px; }
-  .barcode-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
-  .barcode-id { font-size: 11px; font-weight: 700; color: #1A4FA0; letter-spacing: 2.5px; margin-top: 4px; font-family: Arial, sans-serif; }
-  .badge-footer { font-size: 8px; color: #555; text-align: center; border-top: 0.5px solid #ddd; padding-top: 8px; margin-top: auto; width: 100%; font-family: Arial, sans-serif; line-height: 1.5; }
+/* Loading / empty states */
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; gap: 12px; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-lib { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5rem 2rem; color: var(--subtle); text-align: center; }
+.empty-lib .ei { font-size: 48px; margin-bottom: 1rem; opacity: 0.3; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; }
+.empty-state .ei { font-size: 40px; margin-bottom: 1rem; opacity: 0.35; }
 
-  @media print {
-    header, .sidebar { display: none !important; }
-    .layout { display: block; }
-    .preview { padding: 0; background: white !important; background-image: none !important; }
-    .preview-hd { display: none !important; }
-    .cards-grid { gap: 6mm; }
-    .badge { box-shadow: none !important; width: 60mm; height: 80mm; }
-    .card-lbl { display: none; }
-  }
-  @media (max-width: 700px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-    .preview { padding: 1rem; }
-  }
+/* BADGE */
+.badge { width: 227px; height: 302px; background: #fff; border: 2px solid #111; border-radius: 5px; padding: 18px 14px 12px; display: flex; flex-direction: column; align-items: center; font-family: Arial, Helvetica, sans-serif; box-shadow: 0 6px 28px rgba(26,79,160,0.15), 0 1px 4px rgba(0,0,0,0.08); flex-shrink: 0; position: relative; }
+.badge::before { content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 34px; height: 12px; background: #c8c8c8; border-radius: 0 0 20px 20px; border: 1.5px solid #aaa; border-top: none; }
+.badge-header { display: flex; align-items: flex-start; gap: 8px; width: 100%; margin-bottom: 8px; }
+.badge-logo-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.badge-logo-block img, .badge-logo-block svg { width: 42px; height: 42px; object-fit: contain; }
+.badge-brand { display: none; }
+.badge-title-block { flex: 1; padding-top: 4px; }
+.badge-title { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
+.badge-subtitle { font-size: 9px; color: #444; margin-top: 3px; line-height: 1.4; }
+.badge-rule { width: 100%; height: 1px; background: #ddd; margin: 4px 0 10px; }
+.badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.2; width: 100%; margin-bottom: 14px; }
+.barcode-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.barcode-id { font-size: 11px; font-weight: 700; color: #1A4FA0; letter-spacing: 2.5px; margin-top: 4px; font-family: Arial, sans-serif; }
+.badge-footer { font-size: 8px; color: #555; text-align: center; border-top: 0.5px solid #ddd; padding-top: 8px; margin-top: auto; width: 100%; font-family: Arial, sans-serif; line-height: 1.5; }
+
+/* PILL / TOAST */
+.pill { display: inline-flex; align-items: center; justify-content: center; background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 11px; font-weight: 600; padding: 1px 9px; margin-left: 6px; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+@media print {
+  header, .top-tabs, .sidebar, .saved-page, .preview-hd { display: none !important; }
+  .create-layout { display: block; }
+  .preview-area { padding: 0; background: white !important; background-image: none !important; }
+  .cards-grid { gap: 6mm; }
+  .badge { box-shadow: none !important; width: 60mm; height: 80mm; }
+  .card-lbl { display: none; }
+  .page { display: block !important; }
+}
+@media (max-width: 700px) {
+  .create-layout { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+  .preview-area { padding: 1rem; }
+}
 </style>
 </head>
 <body>
@@ -185,17 +246,37 @@
   <div class="hdiv"></div>
   <span class="htitle">RF &amp; Radio Device Badge Generator</span>
   <div class="hspace"></div>
+  <div class="sync-dot" id="sync-dot"></div>
+  <span class="sync-label" id="sync-label">Connecting…</span>
+  <span id="hdr-sel-info" style="font-size:12px;color:rgba(255,255,255,0.75);display:none"></span>
+  <button id="hdr-print-sel" class="hbtn success" onclick="printSelected()" style="display:none">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Print selected
+  </button>
   <button class="hbtn" onclick="window.print()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-    Print badges
+    Print preview
   </button>
 </header>
 
-<div class="layout">
-  <!-- SIDEBAR -->
+<!-- TOP TABS -->
+<div class="top-tabs">
+  <button class="ttab on" onclick="showPage('create')" id="ttab-create">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Create badges
+  </button>
+  <button class="ttab" onclick="showPage('saved')" id="ttab-saved">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Saved employees
+    <span class="ttab-badge" id="saved-count-badge">0</span>
+  </button>
+</div>
+
+<!-- CREATE PAGE -->
+<div class="page on" id="page-create">
+<div class="create-layout">
   <aside class="sidebar">
 
-    <!-- Mode -->
     <div class="sec">
       <div class="sec-title">Mode</div>
       <div class="tabs">
@@ -204,18 +285,13 @@
       </div>
     </div>
 
-    <!-- Default Logo -->
     <div class="sec">
-      <div class="sec-title">Default Logo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--subtle)">— used on all badges</span></div>
-
-      <!-- Upload zone (shown when no logo set) -->
+      <div class="sec-title">Default Logo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--subtle)">— all badges</span></div>
       <div id="logo-zone" class="logo-zone" onclick="document.getElementById('logo-file').click()">
         <input type="file" id="logo-file" accept="image/*" onchange="handleLogoFile(event)" onclick="event.stopPropagation()" />
         <div class="logo-zone-icon">🖼️</div>
         <div class="logo-zone-text">Click to upload logo<br><span style="font-size:10px;color:var(--subtle)">PNG · JPG · SVG</span></div>
       </div>
-
-      <!-- Logo set state -->
       <div id="logo-set" style="display:none">
         <div class="logo-set-row">
           <img id="logo-img" src="" alt="logo" />
@@ -223,21 +299,17 @@
             <div class="logo-set-name" id="logo-name">Logo</div>
             <div class="logo-set-sub">Default for all cards</div>
           </div>
-          <div>
-            <button class="logo-change-btn" onclick="document.getElementById('logo-file2').click()">Change</button>
-            <input type="file" id="logo-file2" accept="image/*" onchange="handleLogoFile(event)" style="display:none" />
-          </div>
+          <button class="logo-change-btn" onclick="document.getElementById('logo-file2').click()">Change</button>
+          <input type="file" id="logo-file2" accept="image/*" onchange="handleLogoFile(event)" style="display:none" />
         </div>
-        <button class="logo-remove-btn" style="margin-top:6px;margin-left:2px" onclick="removeLogo()">✕ Remove logo (use default GEODIS icon)</button>
+        <button class="logo-remove-btn" style="margin-top:6px;margin-left:2px" onclick="removeLogo()">✕ Remove (use default GEODIS icon)</button>
       </div>
-
       <div class="fg" style="margin-top:10px;margin-bottom:0">
         <label>Or paste image URL</label>
         <input id="logo-url" placeholder="https://..." oninput="handleLogoUrl()" />
       </div>
     </div>
 
-    <!-- Single mode -->
     <div id="single-panel" class="sec">
       <div class="sec-title">Employee</div>
       <div class="fg">
@@ -251,28 +323,26 @@
       <div class="fg" style="margin-top:10px">
         <label>Override logo for this badge <span style="font-weight:400;color:var(--subtle)">(optional)</span></label>
         <div style="display:flex;gap:6px;align-items:center">
-          <input id="s-logo-url" placeholder="Paste URL or upload below" style="flex:1;font-size:12px" oninput="rerender()" />
-          <button class="logo-change-btn" style="white-space:nowrap" onclick="document.getElementById('s-logo-file').click()">Upload</button>
+          <input id="s-logo-url" placeholder="Paste URL or upload" style="flex:1;font-size:12px" oninput="rerender()" />
+          <button class="logo-change-btn" onclick="document.getElementById('s-logo-file').click()">Upload</button>
           <input type="file" id="s-logo-file" accept="image/*" onchange="handleSingleLogoFile(event)" style="display:none" />
         </div>
         <div id="s-logo-clear" style="display:none;margin-top:4px">
-          <button class="logo-remove-btn" onclick="clearSingleLogo()">✕ Clear override — use default logo</button>
+          <button class="logo-remove-btn" onclick="clearSingleLogo()">✕ Clear override</button>
         </div>
       </div>
     </div>
 
-    <!-- Bulk mode -->
     <div id="bulk-panel" class="sec" style="display:none">
       <div class="sec-title">People <span class="pill" id="bulk-count">0</span></div>
       <div class="fg">
         <label>Paste names or CSV</label>
         <textarea id="bulk-csv" oninput="rerender()" placeholder="Jane Kowalski&#10;Marcus Webb,MWEBB&#10;Priya Nair,PNAIR"></textarea>
-        <div class="hint">One per line · <code>full_name</code> or <code>full_name,user_id</code><br>Add a 3rd column for a per-badge logo URL:<br><code>full_name,user_id,https://logo.url</code></div>
+        <div class="hint">full_name or full_name,user_id<br>3rd column = per-badge logo URL</div>
       </div>
-      <div class="override-note">💡 To use a different logo on specific badges, add a logo URL as the 3rd column in the CSV. All other badges use the default logo above.</div>
+      <div class="override-note">💡 Add logo URL as 3rd CSV column to override per badge.</div>
     </div>
 
-    <!-- Card settings -->
     <div class="sec">
       <div class="sec-title">Card settings</div>
       <div class="fg">
@@ -286,241 +356,519 @@
     </div>
 
     <button class="gen-btn" onclick="rerender()">↺ Refresh preview</button>
+    <button class="save-btn" id="save-btn" onclick="saveCurrentToFirebase()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save to employee library
+    </button>
     <div style="font-size:11px;color:var(--subtle);text-align:center;line-height:1.7">
-      Prints at 6 × 8 cm (portrait).<br>100% scale · disable browser headers/footers.
+      Prints at 6 × 8 cm (portrait).<br>100% scale · disable headers/footers.<br>
+      <span style="color:var(--blue);font-weight:500">☁️ Synced across all devices</span>
     </div>
   </aside>
 
-  <!-- PREVIEW -->
-  <main class="preview">
+  <div class="preview-area">
     <div class="preview-hd">
       <h2 id="prev-title">Badge preview</h2>
       <span id="prev-meta">6 × 8 cm portrait · Print-ready</span>
     </div>
     <div class="cards-grid" id="cards-grid">
-      <div class="empty-state">
-        <div class="ei">🪪</div>
-        <p>Enter a name above to preview your badge</p>
-      </div>
+      <div class="empty-state"><div class="ei">🪪</div><p>Enter a name to preview your badge</p></div>
     </div>
-  </main>
+  </div>
+</div>
 </div>
 
+<!-- SAVED PAGE -->
+<div class="page" id="page-saved">
+<div class="saved-page">
+  <div class="saved-toolbar">
+    <h2>Employee library <span class="pill" id="lib-count-pill">0</span></h2>
+    <input class="search-box" id="lib-search" placeholder="Search name or ID…" oninput="renderLibrary()" />
+    <button class="action-btn" onclick="selectAll()">Select all</button>
+    <button class="action-btn" onclick="selectNone()">Clear</button>
+    <button class="action-btn blue" id="print-sel-btn" onclick="printSelected()" style="display:none">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print selected (<span id="sel-count-num">0</span>)
+    </button>
+    <button class="action-btn red" id="delete-sel-btn" onclick="deleteSelected()" style="display:none">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Delete selected
+    </button>
+  </div>
+  <div id="emp-grid" class="emp-grid">
+    <div class="loading-state" style="grid-column:1/-1">
+      <div class="spinner"></div>
+      <span>Loading from cloud…</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-  let mode = 'single';
-  let defaultLogo = null;    // global default logo src
-  let singleLogoOverride = null;  // override for single-badge mode
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+let mode = 'single';
+let defaultLogo = null;
+let singleLogoOverride = null;
+let selectedIds = new Set();
+let libraryData = [];   // live cache from Firestore
+let fbReady = false;
 
-  /* ── RANDOM NAME POOL ── */
-  const FIRST = ['Alex','Jordan','Morgan','Taylor','Casey','Riley','Avery','Quinn','Drew','Skyler','Jamie','Reese','Parker','Logan','Blake','Cameron','Sam','Robin','Charlie','Dana'];
-  const LAST  = ['Johnson','Williams','Brown','Garcia','Martinez','Lee','Walker','Hall','Allen','Young','King','Wright','Scott','Adams','Baker','Nelson','Carter','Mitchell','Perez','Roberts'];
-  function randomName() {
-    return FIRST[Math.floor(Math.random()*FIRST.length)] + ' ' + LAST[Math.floor(Math.random()*LAST.length)];
-  }
+const FIRST = ['Alex','Jordan','Morgan','Taylor','Casey','Riley','Avery','Quinn','Drew','Skyler','Jamie','Reese','Parker','Logan','Blake','Cameron','Sam','Robin','Charlie','Dana'];
+const LAST  = ['Johnson','Williams','Brown','Garcia','Martinez','Lee','Walker','Hall','Allen','Young','King','Wright','Scott','Adams','Baker','Nelson','Carter','Mitchell','Perez','Roberts'];
+function randomName() { return FIRST[Math.floor(Math.random()*FIRST.length)]+' '+LAST[Math.floor(Math.random()*LAST.length)]; }
 
-  /* ── MODE ── */
-  function setMode(m) {
-    mode = m;
-    document.getElementById('single-panel').style.display = m === 'single' ? '' : 'none';
-    document.getElementById('bulk-panel').style.display   = m === 'bulk'   ? '' : 'none';
-    document.querySelectorAll('.tab').forEach((t,i) =>
-      t.classList.toggle('on', (i===0&&m==='single')||(i===1&&m==='bulk'))
-    );
-    rerender();
-  }
+/* ══════════════════════════════════
+   FIREBASE INIT
+══════════════════════════════════ */
+function waitForFirebase() {
+  return new Promise(res => {
+    if (window._firebaseReady) { res(); return; }
+    window.addEventListener('firebase-ready', res, { once: true });
+  });
+}
 
-  /* ── DEFAULT LOGO handlers ── */
-  function handleLogoFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => setDefaultLogo(ev.target.result, file.name);
-    reader.readAsDataURL(file);
-  }
-  function handleLogoUrl() {
-    const url = document.getElementById('logo-url').value.trim();
-    if (url) setDefaultLogo(url, url.split('/').pop().split('?')[0]);
-    else { defaultLogo = null; showLogoZone(); rerender(); }
-  }
-  function setDefaultLogo(src, name) {
-    defaultLogo = src;
-    document.getElementById('logo-zone').style.display = 'none';
-    document.getElementById('logo-set').style.display = '';
-    document.getElementById('logo-img').src = src;
-    document.getElementById('logo-name').textContent = name || 'Logo';
-    rerender();
-  }
-  function removeLogo() {
-    defaultLogo = null;
-    document.getElementById('logo-file').value = '';
-    document.getElementById('logo-file2').value = '';
-    document.getElementById('logo-url').value = '';
-    showLogoZone();
-    rerender();
-  }
-  function showLogoZone() {
-    document.getElementById('logo-zone').style.display = '';
-    document.getElementById('logo-set').style.display = 'none';
-  }
-
-  /* ── SINGLE BADGE LOGO OVERRIDE ── */
-  function handleSingleLogoFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      singleLogoOverride = ev.target.result;
-      document.getElementById('s-logo-url').value = '(uploaded file)';
-      document.getElementById('s-logo-clear').style.display = '';
-      rerender();
-    };
-    reader.readAsDataURL(file);
-  }
-  function clearSingleLogo() {
-    singleLogoOverride = null;
-    document.getElementById('s-logo-url').value = '';
-    document.getElementById('s-logo-file').value = '';
-    document.getElementById('s-logo-clear').style.display = 'none';
-    rerender();
-  }
-
-  /* ── UTILS ── */
-  function genUID(name) {
-    const parts = name.trim().split(/\s+/);
-    if (!parts.length) return 'UNKNOWN';
-    if (parts.length === 1) return parts[0].substring(0,7).toUpperCase();
-    return (parts[0][0] + parts[parts.length-1]).substring(0,10).toUpperCase();
-  }
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function geodisLogoSvg() {
-    return `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="19" fill="#1A4FA0"/>
-      <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.2" fill="none"/>
-      <ellipse cx="20" cy="20" rx="19" ry="8" stroke="white" stroke-width="1.2" fill="none"/>
-      <path d="M10 14 Q20 10 30 14" stroke="white" stroke-width="1" fill="none"/>
-      <circle cx="26" cy="13" r="3" fill="white"/>
-      <line x1="26" y1="10" x2="26" y2="7.2" stroke="white" stroke-width="1.2"/>
-      <line x1="28.1" y1="10.9" x2="30.1" y2="8.9" stroke="white" stroke-width="1.2"/>
-      <line x1="23.9" y1="10.9" x2="21.9" y2="8.9" stroke="white" stroke-width="1.2"/>
-    </svg>`;
-  }
-
-  /* ── BUILD BADGE ── */
-  function buildBadge(fullName, uid, site, footer, logoOverride) {
-    const wrap = document.createElement('div');
-    wrap.className = 'card-wrap';
-    const lbl = document.createElement('div');
-    lbl.className = 'card-lbl';
-    lbl.textContent = uid;
-    wrap.appendChild(lbl);
-
-    const badge = document.createElement('div');
-    badge.className = 'badge';
-
-    // Priority: per-badge override > default logo > built-in GEODIS svg
-    const activeLogo = logoOverride || defaultLogo;
-    const logoHtml = activeLogo
-      ? `<img src="${esc(activeLogo)}" alt="logo" />`
-      : geodisLogoSvg();
-
-    badge.innerHTML = `
-      <div class="badge-header">
-        <div class="badge-logo-block">
-          ${logoHtml}
-          <div class="badge-brand">GEODIS</div>
-        </div>
-        <div class="badge-title-block">
-          <div class="badge-title">RF &amp; RADIO DEVICE BADGE</div>
-          <div class="badge-subtitle">${esc(site)}</div>
-        </div>
-      </div>
-      <div class="badge-rule"></div>
-      <div class="badge-name">${esc(fullName)}</div>
-      <div class="barcode-wrap">
-        <canvas class="barcode-canvas"></canvas>
-        <div class="barcode-id">${esc(uid)}</div>
-      </div>
-      <div class="badge-footer">${esc(footer)}</div>
-    `;
-    wrap.appendChild(badge);
-    return { wrap, canvas: badge.querySelector('.barcode-canvas'), uid };
-  }
-
-  function drawBarcode(canvas, uid) {
-    try {
-      JsBarcode(canvas, uid || 'NOUID', {
-        format: 'CODE128', width: 1.9, height: 68,
-        displayValue: false, margin: 0,
-        background: '#ffffff', lineColor: '#000000'
-      });
-      canvas.style.maxWidth = '197px';
-    } catch(e) { console.warn(e); }
-  }
-
-  /* ── RENDER ── */
-  function rerender() { mode === 'single' ? renderSingle() : renderBulk(); }
-
-  function renderSingle() {
-    const nameVal = document.getElementById('s-name').value.trim();
-    const name    = nameVal || randomName();
-    const uid     = document.getElementById('s-uid').value.trim() || genUID(name);
-    const site    = document.getElementById('f-site').value;
-    const footer  = document.getElementById('f-footer').value;
-
-    // single logo override: uploaded file takes priority, else URL field
-    const urlField = document.getElementById('s-logo-url').value.trim();
-    const override = singleLogoOverride || (urlField && urlField !== '(uploaded file)' ? urlField : null);
-
-    const grid = document.getElementById('cards-grid');
-    grid.innerHTML = '';
-    document.getElementById('prev-title').textContent = 'Badge preview';
-    document.getElementById('prev-meta').textContent  = '6 × 8 cm portrait · Print-ready';
-
-    // show placeholder hint if name field is empty
-    if (!nameVal) {
-      const hint = document.createElement('div');
-      hint.style.cssText = 'font-size:11px;color:var(--subtle);margin-bottom:8px;width:100%';
-      hint.textContent = '(showing random preview — type a name above)';
-      grid.appendChild(hint);
+waitForFirebase().then(() => {
+  fbReady = true;
+  setSyncStatus('live', 'Live sync');
+  // Start real-time listener
+  window._db.listenAll(docs => {
+    libraryData = docs;
+    updateBadgeCount();
+    // Only re-render if saved page is visible
+    if (document.getElementById('page-saved').classList.contains('on')) {
+      renderLibrary();
     }
+  });
+}).catch(() => {
+  setSyncStatus('err', 'Offline');
+});
 
-    const { wrap, canvas } = buildBadge(name, uid, site, footer, override);
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+/* ══════════════════════════════════
+   PAGE NAV
+══════════════════════════════════ */
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.ttab').forEach(el => el.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  document.getElementById('ttab-'+p).classList.add('on');
+  if (p === 'saved') renderLibrary();
+}
+
+/* ══════════════════════════════════
+   MODE
+══════════════════════════════════ */
+function setMode(m) {
+  mode = m;
+  document.getElementById('single-panel').style.display = m === 'single' ? '' : 'none';
+  document.getElementById('bulk-panel').style.display   = m === 'bulk'   ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('on', (i===0&&m==='single')||(i===1&&m==='bulk'))
+  );
+  rerender();
+}
+
+/* ══════════════════════════════════
+   LOGO
+══════════════════════════════════ */
+function handleLogoFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => setDefaultLogo(ev.target.result, file.name);
+  reader.readAsDataURL(file);
+}
+function handleLogoUrl() {
+  const url = document.getElementById('logo-url').value.trim();
+  if (url) setDefaultLogo(url, url.split('/').pop().split('?')[0]);
+  else { defaultLogo = null; showLogoZone(); rerender(); }
+}
+function setDefaultLogo(src, name) {
+  defaultLogo = src;
+  document.getElementById('logo-zone').style.display = 'none';
+  document.getElementById('logo-set').style.display = '';
+  document.getElementById('logo-img').src = src;
+  document.getElementById('logo-name').textContent = name || 'Logo';
+  rerender();
+}
+function removeLogo() {
+  defaultLogo = null;
+  ['logo-file','logo-file2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('logo-url').value = '';
+  showLogoZone(); rerender();
+}
+function showLogoZone() {
+  document.getElementById('logo-zone').style.display = '';
+  document.getElementById('logo-set').style.display = 'none';
+}
+function handleSingleLogoFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    singleLogoOverride = ev.target.result;
+    document.getElementById('s-logo-url').value = '(uploaded file)';
+    document.getElementById('s-logo-clear').style.display = '';
+    rerender();
+  };
+  reader.readAsDataURL(file);
+}
+function clearSingleLogo() {
+  singleLogoOverride = null;
+  document.getElementById('s-logo-url').value = '';
+  document.getElementById('s-logo-file').value = '';
+  document.getElementById('s-logo-clear').style.display = 'none';
+  rerender();
+}
+
+/* ══════════════════════════════════
+   UTILS
+══════════════════════════════════ */
+function genUID(name) {
+  const parts = name.trim().split(/\s+/);
+  if (!parts.length) return 'UNKNOWN';
+  if (parts.length === 1) return parts[0].substring(0,7).toUpperCase();
+  return (parts[0][0]+parts[parts.length-1]).substring(0,10).toUpperCase();
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function geodisLogoSvg() {
+  return `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="20" r="19" fill="#1A4FA0"/>
+    <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.2" fill="none"/>
+    <ellipse cx="20" cy="20" rx="19" ry="8" stroke="white" stroke-width="1.2" fill="none"/>
+    <path d="M10 14 Q20 10 30 14" stroke="white" stroke-width="1" fill="none"/>
+    <circle cx="26" cy="13" r="3" fill="white"/>
+    <line x1="26" y1="10" x2="26" y2="7.2" stroke="white" stroke-width="1.2"/>
+    <line x1="28.1" y1="10.9" x2="30.1" y2="8.9" stroke="white" stroke-width="1.2"/>
+    <line x1="23.9" y1="10.9" x2="21.9" y2="8.9" stroke="white" stroke-width="1.2"/>
+  </svg>`;
+}
+function initials(name) {
+  const p = (name||'').trim().split(/\s+/);
+  return p.length >= 2 ? (p[0][0]+p[p.length-1][0]).toUpperCase() : (name||'?').substring(0,2).toUpperCase();
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+function updateBadgeCount() {
+  const n = libraryData.length;
+  document.getElementById('saved-count-badge').textContent = n;
+  document.getElementById('lib-count-pill').textContent = n;
+}
+
+/* ══════════════════════════════════
+   BUILD BADGE ELEMENT
+══════════════════════════════════ */
+function buildBadgeEl(emp) {
+  const badge = document.createElement('div');
+  badge.className = 'badge';
+  const activeLogo = emp.logoOverride || emp.defaultLogo || defaultLogo;
+  const logoHtml = activeLogo ? `<img src="${esc(activeLogo)}" alt="logo" />` : geodisLogoSvg();
+  badge.innerHTML = `
+    <div class="badge-header">
+      <div class="badge-logo-block">${logoHtml}<div class="badge-brand">GEODIS</div></div>
+      <div class="badge-title-block">
+        <div class="badge-title">RF &amp; RADIO DEVICE BADGE</div>
+        <div class="badge-subtitle">${esc(emp.site)}</div>
+      </div>
+    </div>
+    <div class="badge-rule"></div>
+    <div class="badge-name">${esc(emp.name)}</div>
+    <div class="barcode-wrap">
+      <canvas class="barcode-canvas"></canvas>
+      <div class="barcode-id">${esc(emp.uid)}</div>
+    </div>
+    <div class="badge-footer">${esc(emp.footer)}</div>`;
+  return badge;
+}
+function drawBarcode(canvas, uid) {
+  try {
+    JsBarcode(canvas, uid||'NOUID', { format:'CODE128', width:1.9, height:68, displayValue:false, margin:0, background:'#ffffff', lineColor:'#000000' });
+    canvas.style.maxWidth = '197px';
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════
+   RENDER (CREATE PAGE)
+══════════════════════════════════ */
+function rerender() { mode === 'single' ? renderSingle() : renderBulk(); }
+
+function renderSingle() {
+  const nameVal = document.getElementById('s-name').value.trim();
+  const name    = nameVal || randomName();
+  const uid     = document.getElementById('s-uid').value.trim() || genUID(name);
+  const site    = document.getElementById('f-site').value;
+  const footer  = document.getElementById('f-footer').value;
+  const urlFld  = document.getElementById('s-logo-url').value.trim();
+  const override = singleLogoOverride || (urlFld && urlFld !== '(uploaded file)' ? urlFld : null);
+  const emp = { name, uid, site, footer, logoOverride: override, defaultLogo };
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  if (!nameVal) {
+    const h = document.createElement('div');
+    h.style.cssText = 'font-size:11px;color:var(--subtle);margin-bottom:8px;width:100%';
+    h.textContent = '(showing random preview — type a name above)';
+    grid.appendChild(h);
+  }
+  const wrap = document.createElement('div'); wrap.className = 'card-wrap';
+  const lbl = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
+  const badge = buildBadgeEl(emp);
+  wrap.appendChild(lbl); wrap.appendChild(badge);
+  grid.appendChild(wrap);
+  drawBarcode(badge.querySelector('.barcode-canvas'), uid);
+}
+
+function renderBulk() {
+  const raw    = document.getElementById('bulk-csv').value.trim();
+  const site   = document.getElementById('f-site').value;
+  const footer = document.getElementById('f-footer').value;
+  const grid   = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  if (!raw) {
+    document.getElementById('bulk-count').textContent = '0';
+    grid.innerHTML = '<div class="empty-state"><div class="ei">🪪</div><p>Paste names above</p></div>';
+    return;
+  }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  document.getElementById('bulk-count').textContent = lines.length;
+  document.getElementById('prev-title').textContent = `${lines.length} badge${lines.length!==1?'s':''}`;
+  lines.forEach(line => {
+    const parts = line.split(',');
+    const name = parts[0].trim(); if (!name) return;
+    const uid  = parts[1] ? parts[1].trim() : genUID(name);
+    const logoOverride = parts[2] ? parts[2].trim() : null;
+    const emp  = { name, uid, site, footer, logoOverride, defaultLogo };
+    const wrap = document.createElement('div'); wrap.className = 'card-wrap';
+    const lbl  = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
+    const badge = buildBadgeEl(emp);
+    wrap.appendChild(lbl); wrap.appendChild(badge);
     grid.appendChild(wrap);
-    drawBarcode(canvas, uid);
-  }
+    drawBarcode(badge.querySelector('.barcode-canvas'), uid);
+  });
+}
 
-  function renderBulk() {
-    const raw    = document.getElementById('bulk-csv').value.trim();
-    const site   = document.getElementById('f-site').value;
-    const footer = document.getElementById('f-footer').value;
-    const grid   = document.getElementById('cards-grid');
-    grid.innerHTML = '';
-    if (!raw) {
-      document.getElementById('bulk-count').textContent = '0';
-      grid.innerHTML = '<div class="empty-state"><div class="ei">🪪</div><p>Paste names above to generate badges</p></div>';
-      return;
+/* ══════════════════════════════════
+   SAVE TO FIREBASE
+══════════════════════════════════ */
+async function saveCurrentToFirebase() {
+  if (!fbReady) { showToast('⚠️ Not connected to cloud yet'); return; }
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const site   = document.getElementById('f-site').value;
+  const footer = document.getElementById('f-footer').value;
+  const now    = new Date().toLocaleDateString('en-CA');
+  let saved = 0, skipped = 0;
+
+  try {
+    if (mode === 'single') {
+      const nameVal = document.getElementById('s-name').value.trim();
+      if (!nameVal) { showToast('⚠️ Enter a name first'); return; }
+      const uid = document.getElementById('s-uid').value.trim() || genUID(nameVal);
+      // check duplicate
+      if (libraryData.find(e => e.uid === uid)) {
+        showToast(`⚠️ ${uid} already exists in library`); return;
+      }
+      const urlFld = document.getElementById('s-logo-url').value.trim();
+      const logoOverride = singleLogoOverride || (urlFld && urlFld !== '(uploaded file)' ? urlFld : null);
+      await window._db.save({ name: nameVal, uid, site, footer, logoOverride: logoOverride||null, defaultLogo: defaultLogo||null, savedAt: now });
+      saved = 1;
+    } else {
+      const raw = document.getElementById('bulk-csv').value.trim();
+      if (!raw) { showToast('⚠️ No names to save'); return; }
+      const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+      for (const line of lines) {
+        const parts = line.split(',');
+        const name = parts[0].trim(); if (!name) continue;
+        const uid  = parts[1] ? parts[1].trim() : genUID(name);
+        const logoOverride = parts[2] ? parts[2].trim() : null;
+        if (libraryData.find(e => e.uid === uid)) { skipped++; continue; }
+        await window._db.save({ name, uid, site, footer, logoOverride: logoOverride||null, defaultLogo: defaultLogo||null, savedAt: now });
+        saved++;
+      }
+      if (!saved) { showToast(`⚠️ All ${skipped} already exist in library`); return; }
     }
-    const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
-    document.getElementById('bulk-count').textContent = lines.length;
-    document.getElementById('prev-title').textContent = `${lines.length} badge${lines.length!==1?'s':''}`;
-    document.getElementById('prev-meta').textContent  = '6 × 8 cm portrait · Print-ready';
-    const todo = [];
-    lines.forEach(line => {
-      const parts = line.split(',');
-      const name  = parts[0].trim();
-      const uid   = parts[1] ? parts[1].trim() : genUID(name);
-      const perBadgeLogo = parts[2] ? parts[2].trim() : null;
-      if (!name) return;
-      const { wrap, canvas } = buildBadge(name, uid, site, footer, perBadgeLogo);
-      grid.appendChild(wrap);
-      todo.push({ canvas, uid });
-    });
-    todo.forEach(({ canvas, uid }) => drawBarcode(canvas, uid));
+    const msg = skipped > 0
+      ? `✓ Saved ${saved} · Skipped ${skipped} duplicates`
+      : `✓ Saved ${saved} employee${saved!==1?'s':''} to cloud`;
+    showToast(msg);
+  } catch(err) {
+    console.error(err);
+    showToast('❌ Save failed — check connection');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save to employee library`;
+  }
+}
+
+/* ══════════════════════════════════
+   LIBRARY RENDER
+══════════════════════════════════ */
+function renderLibrary() {
+  const query    = (document.getElementById('lib-search').value || '').toLowerCase();
+  const filtered = libraryData.filter(e =>
+    (e.name||'').toLowerCase().includes(query) || (e.uid||'').toLowerCase().includes(query)
+  );
+  updateBadgeCount();
+  const grid = document.getElementById('emp-grid');
+  grid.innerHTML = '';
+
+  if (!libraryData.length) {
+    grid.innerHTML = `<div class="empty-lib" style="grid-column:1/-1">
+      <div class="ei">👥</div><p>No saved employees yet</p>
+      <small style="margin-top:4px">Create a badge and click "Save to employee library"</small></div>`;
+    updateSelectionUI(); return;
+  }
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-lib" style="grid-column:1/-1"><div class="ei">🔍</div><p>No results for "${esc(query)}"</p></div>`;
+    updateSelectionUI(); return;
   }
 
-  window.addEventListener('DOMContentLoaded', () => setTimeout(rerender, 150));
+  filtered.forEach(emp => {
+    const card = document.createElement('div');
+    card.className = 'emp-card' + (selectedIds.has(emp.id) ? ' selected' : '');
+    card.innerHTML = `
+      <div class="emp-card-check"></div>
+      <div class="emp-avatar">${initials(emp.name)}</div>
+      <div class="emp-name">${esc(emp.name)}</div>
+      <div class="emp-uid">${esc(emp.uid)}</div>
+      <div class="emp-site">${esc(emp.site||'')}</div>
+      <div class="emp-date">Saved ${esc(emp.savedAt||'')}</div>
+      <div class="emp-actions">
+        <button class="emp-act-btn" onclick="event.stopPropagation();printOne('${emp.id}')">🖨 Print</button>
+        <button class="emp-act-btn" onclick="event.stopPropagation();loadToEditor('${emp.id}')">✏️ Edit</button>
+        <button class="emp-act-btn del" onclick="event.stopPropagation();deleteOne('${emp.id}')">🗑 Delete</button>
+      </div>`;
+    card.addEventListener('click', () => toggleSelect(emp.id));
+    grid.appendChild(card);
+  });
+  updateSelectionUI();
+}
+
+/* ══════════════════════════════════
+   SELECTION
+══════════════════════════════════ */
+function toggleSelect(id) {
+  selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  renderLibrary();
+}
+function selectAll() {
+  const q = (document.getElementById('lib-search').value || '').toLowerCase();
+  libraryData.filter(e => (e.name||'').toLowerCase().includes(q) || (e.uid||'').toLowerCase().includes(q))
+             .forEach(e => selectedIds.add(e.id));
+  renderLibrary();
+}
+function selectNone() { selectedIds.clear(); renderLibrary(); }
+
+function updateSelectionUI() {
+  const n = selectedIds.size;
+  document.getElementById('print-sel-btn').style.display  = n > 0 ? '' : 'none';
+  document.getElementById('delete-sel-btn').style.display = n > 0 ? '' : 'none';
+  document.getElementById('hdr-print-sel').style.display  = n > 0 ? '' : 'none';
+  document.getElementById('hdr-sel-info').style.display   = n > 0 ? '' : 'none';
+  const sn = document.getElementById('sel-count-num');
+  if (sn) sn.textContent = n;
+  if (n > 0) document.getElementById('hdr-sel-info').textContent = `${n} selected`;
+}
+
+/* ══════════════════════════════════
+   PRINT
+══════════════════════════════════ */
+function buildPrintHTML(employees) {
+  return employees.map(emp => {
+    const activeLogo = emp.logoOverride || emp.defaultLogo || defaultLogo;
+    const logoHtml = activeLogo
+      ? `<img src="${esc(activeLogo)}" alt="logo" style="width:42px;height:42px;object-fit:contain"/>`
+      : geodisLogoSvg();
+    const cid = 'bc_' + (emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
+    return `<div style="width:60mm;height:80mm;background:#fff;border:2px solid #111;border-radius:5px;padding:18px 14px 12px;display:flex;flex-direction:column;align-items:center;font-family:Arial,sans-serif;position:relative;page-break-inside:avoid;margin:3mm;">
+      <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:34px;height:12px;background:#c8c8c8;border-radius:0 0 20px 20px;border:1.5px solid #aaa;border-top:none;"></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;width:100%;margin-bottom:8px;">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">${logoHtml}</div>
+        <div style="flex:1;padding-top:4px;">
+          <div style="font-size:10.5px;font-weight:700;color:#111;line-height:1.3;">RF &amp; RADIO DEVICE BADGE</div>
+          <div style="font-size:9px;color:#444;margin-top:3px;">${esc(emp.site)}</div>
+        </div>
+      </div>
+      <div style="width:100%;height:1px;background:#ddd;margin:4px 0 10px;"></div>
+      <div style="font-size:19px;font-weight:700;color:#111;text-align:center;width:100%;margin-bottom:14px;">${esc(emp.name)}</div>
+      <div style="display:flex;flex-direction:column;align-items:center;width:100%;">
+        <canvas id="${cid}" style="max-width:197px;"></canvas>
+        <div style="font-size:11px;font-weight:700;color:#1A4FA0;letter-spacing:2.5px;margin-top:4px;">${esc(emp.uid)}</div>
+      </div>
+      <div style="font-size:8px;color:#555;text-align:center;border-top:0.5px solid #ddd;padding-top:8px;margin-top:auto;width:100%;">${esc(emp.footer)}</div>
+    </div>`;
+  }).join('');
+}
+
+function doPrint(employees) {
+  const win = window.open('', '_blank', 'width=900,height=700');
+  const barcodeInits = employees.map(emp => {
+    const cid = 'bc_' + (emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
+    return `try{JsBarcode(document.getElementById('${cid}'),'${(emp.uid||'NOUID').replace(/'/g,"\\'")}',{format:'CODE128',width:1.9,height:68,displayValue:false,margin:0,background:'#ffffff',lineColor:'#000000'});}catch(e){}`;
+  }).join('\n');
+  win.document.write(`<!DOCTYPE html><html><head><title>Print Badges</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{background:white;}.grid{display:flex;flex-wrap:wrap;gap:6mm;padding:10mm;}@media print{@page{margin:10mm;}body{margin:0;}.grid{padding:0;}}</style>
+  </head><body><div class="grid">${buildPrintHTML(employees)}</div>
+  <script>window.onload=function(){${barcodeInits}setTimeout(function(){window.print();},400);};<\/script></body></html>`);
+  win.document.close();
+}
+
+function printOne(id) {
+  const emp = libraryData.find(e => e.id === id);
+  if (emp) doPrint([emp]);
+}
+function printSelected() {
+  if (!selectedIds.size) return;
+  doPrint(libraryData.filter(e => selectedIds.has(e.id)));
+}
+
+/* ══════════════════════════════════
+   DELETE / EDIT
+══════════════════════════════════ */
+async function deleteOne(id) {
+  if (!confirm('Remove this employee from the library?')) return;
+  try {
+    await window._db.delete(id);
+    selectedIds.delete(id);
+    showToast('Deleted');
+  } catch(e) { showToast('❌ Delete failed'); }
+}
+async function deleteSelected() {
+  if (!selectedIds.size) return;
+  if (!confirm(`Delete ${selectedIds.size} employee(s) from the library?`)) return;
+  try {
+    for (const id of selectedIds) await window._db.delete(id);
+    selectedIds.clear();
+    showToast('Deleted selected employees');
+  } catch(e) { showToast('❌ Delete failed'); }
+}
+function loadToEditor(id) {
+  const emp = libraryData.find(e => e.id === id); if (!emp) return;
+  showPage('create'); setMode('single');
+  document.getElementById('s-name').value   = emp.name || '';
+  document.getElementById('s-uid').value    = emp.uid  || '';
+  document.getElementById('f-site').value   = emp.site || '';
+  document.getElementById('f-footer').value = emp.footer || '';
+  rerender();
+  showToast(`Loaded ${emp.name} into editor`);
+}
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => setTimeout(rerender, 150));
 </script>
 </body>
 </html>
