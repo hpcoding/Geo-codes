@@ -481,35 +481,71 @@ function setMode(m) {
 /* ══════════════════════════════════
    LOGO
 ══════════════════════════════════ */
+// LOAD SAVED LOGO ON PAGE LOAD ✅
+window.addEventListener('DOMContentLoaded', () => {
+  const savedLogo = localStorage.getItem('defaultLogo');
+  const savedName = localStorage.getItem('defaultLogoName');
+
+  if (savedLogo) {
+    setDefaultLogo(savedLogo, savedName || 'Logo');
+  }
+});
+
 function handleLogoFile(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => setDefaultLogo(ev.target.result, file.name);
   reader.readAsDataURL(file);
 }
+
 function handleLogoUrl() {
   const url = document.getElementById('logo-url').value.trim();
   if (url) setDefaultLogo(url, url.split('/').pop().split('?')[0]);
-  else { defaultLogo = null; showLogoZone(); rerender(); }
+  else { 
+    defaultLogo = null; 
+    localStorage.removeItem('defaultLogo');          // ✅ added
+    localStorage.removeItem('defaultLogoName');      // ✅ added
+    showLogoZone(); 
+    rerender(); 
+  }
 }
+
 function setDefaultLogo(src, name) {
   defaultLogo = src;
+
+  // SAVE TO LOCAL STORAGE ✅
+  localStorage.setItem('defaultLogo', src);
+  localStorage.setItem('defaultLogoName', name || 'Logo');
+
   document.getElementById('logo-zone').style.display = 'none';
   document.getElementById('logo-set').style.display = '';
   document.getElementById('logo-img').src = src;
   document.getElementById('logo-name').textContent = name || 'Logo';
   rerender();
 }
+
 function removeLogo() {
   defaultLogo = null;
-  ['logo-file','logo-file2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+
+  // REMOVE FROM LOCAL STORAGE ✅
+  localStorage.removeItem('defaultLogo');
+  localStorage.removeItem('defaultLogoName');
+
+  ['logo-file','logo-file2'].forEach(id => { 
+    const el=document.getElementById(id); 
+    if(el) el.value=''; 
+  });
+
   document.getElementById('logo-url').value = '';
-  showLogoZone(); rerender();
+  showLogoZone(); 
+  rerender();
 }
+
 function showLogoZone() {
   document.getElementById('logo-zone').style.display = '';
   document.getElementById('logo-set').style.display = 'none';
 }
+
 function handleSingleLogoFile(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -521,6 +557,7 @@ function handleSingleLogoFile(e) {
   };
   reader.readAsDataURL(file);
 }
+
 function clearSingleLogo() {
   singleLogoOverride = null;
   document.getElementById('s-logo-url').value = '';
