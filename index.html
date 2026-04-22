@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -13,150 +12,170 @@
     --blue: #1A4FA0;
     --blue-dark: #0f3070;
     --blue-light: #e8eef9;
-    --bg: #f0f2f7;
+    --bg: #eef1f8;
     --surface: #ffffff;
-    --surface2: #f7f8fb;
-    --border: rgba(0,0,0,0.09);
+    --surface2: #f4f6fb;
+    --border: rgba(26,79,160,0.12);
     --text: #111827;
-    --muted: #6b7280;
-    --subtle: #9ca3af;
+    --muted: #5a6a85;
+    --subtle: #98a6be;
     --r: 12px;
     --rs: 8px;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-header {
-background: var(–blue); color: white;
-padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
-height: 56px; position: sticky; top: 0; z-index: 100;
-box-shadow: 0 2px 12px rgba(26,79,160,0.3);
-}
-.hlogo svg { width: 30px; height: 30px; }
-.hbrand { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; }
-.hdiv { width: 1px; height: 20px; background: rgba(255,255,255,0.25); margin: 0 4px; }
-.htitle { font-size: 12px; opacity: 0.7; }
-.hspace { flex: 1; }
-.hbtn {
-display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px;
-background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.25);
-font-size: 13px; font-weight: 500; cursor: pointer; font-family: ‘DM Sans’, sans-serif; transition: background 0.15s;
-}
-.hbtn:hover { background: rgba(255,255,255,0.25); }
+  /* ── HEADER — always deep GEODIS blue ── */
+  header {
+    background: #1A4FA0;
+    color: #fff;
+    padding: 0 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+    height: 56px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(15,48,112,0.35);
+  }
+  .hlogo svg { width: 32px; height: 32px; }
+  .hbrand { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #fff; }
+  .hdiv { width: 1px; height: 22px; background: rgba(255,255,255,0.3); margin: 0 6px; }
+  .htitle { font-size: 12px; color: rgba(255,255,255,0.72); font-weight: 400; }
+  .hspace { flex: 1; }
+  .hbtn {
+    display: flex; align-items: center; gap: 6px; padding: 7px 16px;
+    border-radius: 6px; background: rgba(255,255,255,0.18);
+    color: #fff; border: 1px solid rgba(255,255,255,0.3);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+  }
+  .hbtn:hover { background: rgba(255,255,255,0.28); }
 
-.layout { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 56px); }
+  /* ── LAYOUT ── */
+  .layout { display: grid; grid-template-columns: 330px 1fr; min-height: calc(100vh - 56px); }
 
-.sidebar {
-background: var(–surface); border-right: 1px solid var(–border);
-padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto;
-}
-.sec { background: var(–surface2); border: 1px solid var(–border); border-radius: var(–r); padding: 1rem 1.1rem; }
-.sec-title { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(–muted); margin-bottom: 0.8rem; }
+  .sidebar {
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto;
+  }
+  .sec { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.1rem; }
+  .sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.85rem; }
 
-.tabs { display: flex; gap: 5px; background: var(–bg); border-radius: 8px; padding: 3px; }
-.tab { flex: 1; padding: 6px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(–muted); border-radius: 6px; cursor: pointer; font-family: ‘DM Sans’, sans-serif; transition: all 0.15s; }
-.tab.on { background: white; color: var(–blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
+  .tab { flex: 1; padding: 6px 0; font-size: 13px; font-weight: 500; border: none; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .tab.on { background: white; color: var(--blue); box-shadow: 0 1px 4px rgba(26,79,160,0.12); }
 
-.fg { margin-bottom: 0.7rem; }
-.fg:last-child { margin-bottom: 0; }
-.fg label { display: block; font-size: 11.5px; font-weight: 500; color: var(–muted); margin-bottom: 4px; }
-.fg input, .fg textarea { width: 100%; padding: 7px 10px; border: 1px solid var(–border); border-radius: var(–rs); font-size: 13px; font-family: ‘DM Sans’, sans-serif; color: var(–text); background: white; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-.fg input:focus, .fg textarea:focus { border-color: var(–blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
-.fg textarea { resize: vertical; min-height: 90px; font-family: ‘DM Mono’, monospace; font-size: 12px; }
-.hint { font-size: 11px; color: var(–subtle); margin-top: 3px; }
+  .fg { margin-bottom: 0.75rem; }
+  .fg:last-child { margin-bottom: 0; }
+  .fg label { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+  .fg input, .fg textarea {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--rs);
+    font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text);
+    background: white; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .fg input:focus, .fg textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
+  .fg textarea { resize: vertical; min-height: 90px; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .hint { font-size: 11px; color: var(--subtle); margin-top: 3px; line-height: 1.5; }
 
-.logo-zone { border: 1.5px dashed var(–border); border-radius: var(–rs); padding: 14px; text-align: center; cursor: pointer; background: white; position: relative; transition: all 0.15s; }
-.logo-zone:hover { border-color: var(–blue); background: var(–blue-light); }
-.logo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.logo-zone-icon { font-size: 22px; margin-bottom: 4px; }
-.logo-zone-text { font-size: 12px; color: var(–muted); line-height: 1.5; }
-.logo-preview-wrap { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-.logo-preview-wrap img { width: 44px; height: 44px; object-fit: contain; border-radius: 4px; border: 1px solid var(–border); background: white; }
-.remove-logo { font-size: 11px; color: #e53e3e; cursor: pointer; background: none; border: none; font-family: ‘DM Sans’, sans-serif; padding: 0; margin-top: 2px; display: block; }
+  /* ── LOGO SECTION ── */
+  .logo-zone {
+    border: 1.5px dashed rgba(26,79,160,0.25); border-radius: var(--rs);
+    padding: 16px; text-align: center; cursor: pointer;
+    background: white; position: relative; transition: all 0.15s;
+  }
+  .logo-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+  .logo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .logo-zone-icon { font-size: 22px; margin-bottom: 4px; }
+  .logo-zone-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-.gen-btn { width: 100%; padding: 10px; background: var(–blue); color: white; border: none; border-radius: var(–rs); font-size: 14px; font-weight: 600; cursor: pointer; font-family: ‘DM Sans’, sans-serif; transition: background 0.15s; }
-.gen-btn:hover { background: var(–blue-dark); }
+  .logo-set-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border: 1px solid var(--border); border-radius: var(--rs); }
+  .logo-set-row img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; border: 1px solid var(--border); background: #f9f9f9; }
+  .logo-set-info { flex: 1; min-width: 0; }
+  .logo-set-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .logo-set-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+  .logo-change-btn { font-size: 11px; color: var(--blue); cursor: pointer; background: var(--blue-light); border: none; border-radius: 4px; padding: 4px 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; white-space: nowrap; }
+  .logo-change-btn:hover { background: #d0ddf5; }
+  .logo-remove-btn { font-size: 11px; color: #c0392b; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; margin-top: 2px; display: block; }
+  .logo-remove-btn:hover { text-decoration: underline; }
 
-.preview { padding: 2rem; overflow-y: auto; background: var(–bg); background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.055) 1px, transparent 0); background-size: 20px 20px; }
-.preview-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-.preview-hd h2 { font-size: 15px; font-weight: 600; }
-.preview-hd span { font-size: 12px; color: var(–muted); }
-.cards-grid { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
-.card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.card-lbl { font-size: 11px; color: var(–subtle); font-family: ‘DM Mono’, monospace; }
+  /* per-badge logo override (bulk) */
+  .override-note { font-size: 11px; color: var(--muted); background: var(--blue-light); border-radius: 6px; padding: 7px 10px; line-height: 1.5; margin-top: 4px; }
 
-.pill { display: inline-flex; align-items: center; justify-content: center; background: var(–blue-light); color: var(–blue); border-radius: 20px; font-size: 12px; font-weight: 600; padding: 1px 9px; margin-left: 6px; }
-.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(–subtle); text-align: center; }
-.empty-state .ei { font-size: 40px; margin-bottom: 1rem; opacity: 0.4; }
+  .gen-btn {
+    width: 100%; padding: 10px; background: var(--blue); color: white;
+    border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+  }
+  .gen-btn:hover { background: var(--blue-dark); }
 
-/* ═══════════════════════════════════════════
-BADGE: 6 cm wide × 8 cm tall (portrait)
-1 cm = 37.7953 px at 96 dpi
-6 cm = 226.77 px  →  227 px
-8 cm = 302.36 px  →  302 px
-═══════════════════════════════════════════ */
-.badge {
-width: 227px;
-height: 302px;
-background: #fff;
-border: 2px solid #111;
-border-radius: 5px;
-padding: 18px 14px 12px;
-display: flex;
-flex-direction: column;
-align-items: center;
-font-family: Arial, Helvetica, sans-serif;
-box-shadow: 0 6px 28px rgba(26,79,160,0.15), 0 1px 4px rgba(0,0,0,0.08);
-flex-shrink: 0;
-position: relative;
-}
-.badge::before {
-content: ‘’;
-position: absolute;
-top: -1px; left: 50%; transform: translateX(-50%);
-width: 34px; height: 12px;
-background: #c8c8c8;
-border-radius: 0 0 20px 20px;
-border: 1.5px solid #aaa; border-top: none;
-}
-.badge-header { display: flex; align-items: flex-start; gap: 8px; width: 100%; margin-bottom: 8px; }
-.badge-logo-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-.badge-logo-block img, .badge-logo-block svg { width: 42px; height: 42px; object-fit: contain; }
-.badge-brand { font-size: 8.5px; font-weight: 800; color: #1A4FA0; letter-spacing: 0.5px; margin-top: 2px; font-family: Arial, sans-serif; }
-.badge-title-block { flex: 1; padding-top: 4px; }
-.badge-title { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
-.badge-subtitle { font-size: 9px; color: #444; margin-top: 3px; line-height: 1.4; }
-.badge-rule { width: 100%; height: 1px; background: #ddd; margin: 4px 0 10px; }
-.badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.2; width: 100%; margin-bottom: 14px; }
-.barcode-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
-.barcode-id { font-size: 11px; font-weight: 700; color: #1A4FA0; letter-spacing: 2.5px; margin-top: 4px; font-family: Arial, sans-serif; }
-.badge-footer { font-size: 8px; color: #555; text-align: center; border-top: 0.5px solid #ddd; padding-top: 8px; margin-top: auto; width: 100%; font-family: Arial, sans-serif; line-height: 1.5; }
+  /* ── PREVIEW ── */
+  .preview {
+    padding: 2rem; overflow-y: auto; background: var(--bg);
+    background-image: radial-gradient(circle at 1px 1px, rgba(26,79,160,0.07) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+  .preview-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .preview-hd h2 { font-size: 15px; font-weight: 600; color: var(--text); }
+  .preview-hd span { font-size: 12px; color: var(--muted); }
+  .cards-grid { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .card-lbl { font-size: 11px; color: var(--subtle); font-family: 'DM Mono', monospace; }
 
-@media print {
-header, .sidebar { display: none !important; }
-.layout { display: block; }
-.preview { padding: 0; background: white !important; background-image: none !important; }
-.preview-hd { display: none !important; }
-.cards-grid { gap: 6mm; }
-.badge { box-shadow: none !important; width: 60mm; height: 80mm; }
-.card-lbl { display: none; }
-}
-@media (max-width: 700px) {
-.layout { grid-template-columns: 1fr; }
-.sidebar { border-right: none; border-bottom: 1px solid var(–border); }
-.preview { padding: 1rem; }
-}
+  .pill { display: inline-flex; align-items: center; justify-content: center; background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 11px; font-weight: 600; padding: 1px 9px; margin-left: 6px; }
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; }
+  .empty-state .ei { font-size: 40px; margin-bottom: 1rem; opacity: 0.35; }
+
+  /* ── BADGE: 6cm × 8cm portrait ── */
+  .badge {
+    width: 227px; height: 302px;
+    background: #fff; border: 2px solid #111; border-radius: 5px;
+    padding: 18px 14px 12px;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: 0 6px 28px rgba(26,79,160,0.15), 0 1px 4px rgba(0,0,0,0.08);
+    flex-shrink: 0; position: relative;
+  }
+  .badge::before {
+    content: ''; position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    width: 34px; height: 12px; background: #c8c8c8;
+    border-radius: 0 0 20px 20px; border: 1.5px solid #aaa; border-top: none;
+  }
+  .badge-header { display: flex; align-items: flex-start; gap: 8px; width: 100%; margin-bottom: 8px; }
+  .badge-logo-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .badge-logo-block img, .badge-logo-block svg { width: 42px; height: 42px; object-fit: contain; }
+  .badge-brand { font-size: 8.5px; font-weight: 800; color: #1A4FA0; letter-spacing: 0.5px; margin-top: 2px; font-family: Arial, sans-serif; }
+  .badge-title-block { flex: 1; padding-top: 4px; }
+  .badge-title { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
+  .badge-subtitle { font-size: 9px; color: #444; margin-top: 3px; line-height: 1.4; }
+  .badge-rule { width: 100%; height: 1px; background: #ddd; margin: 4px 0 10px; }
+  .badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.2; width: 100%; margin-bottom: 14px; }
+  .barcode-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .barcode-id { font-size: 11px; font-weight: 700; color: #1A4FA0; letter-spacing: 2.5px; margin-top: 4px; font-family: Arial, sans-serif; }
+  .badge-footer { font-size: 8px; color: #555; text-align: center; border-top: 0.5px solid #ddd; padding-top: 8px; margin-top: auto; width: 100%; font-family: Arial, sans-serif; line-height: 1.5; }
+
+  @media print {
+    header, .sidebar { display: none !important; }
+    .layout { display: block; }
+    .preview { padding: 0; background: white !important; background-image: none !important; }
+    .preview-hd { display: none !important; }
+    .cards-grid { gap: 6mm; }
+    .badge { box-shadow: none !important; width: 60mm; height: 80mm; }
+    .card-lbl { display: none; }
+  }
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .preview { padding: 1rem; }
+  }
 </style>
-
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="hlogo">
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="19" fill="white" fill-opacity="0.15"/>
+      <circle cx="20" cy="20" r="19" fill="white" fill-opacity="0.18"/>
       <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.5" fill="none"/>
       <ellipse cx="20" cy="20" rx="19" ry="8.5" stroke="white" stroke-width="1.5" fill="none"/>
-      <circle cx="26.5" cy="13" r="3.2" fill="white" fill-opacity="0.9"/>
+      <circle cx="26.5" cy="13" r="3.2" fill="white" fill-opacity="0.95"/>
       <line x1="26.5" y1="9.8" x2="26.5" y2="7" stroke="white" stroke-width="1.4"/>
       <line x1="28.8" y1="10.9" x2="31" y2="8.7" stroke="white" stroke-width="1.4"/>
       <line x1="24.2" y1="10.9" x2="22" y2="8.7" stroke="white" stroke-width="1.4"/>
@@ -173,91 +192,133 @@ header, .sidebar { display: none !important; }
 </header>
 
 <div class="layout">
+  <!-- SIDEBAR -->
   <aside class="sidebar">
 
-```
-<div class="sec">
-  <div class="sec-title">Mode</div>
-  <div class="tabs">
-    <button class="tab on" onclick="setMode('single')">Single</button>
-    <button class="tab" onclick="setMode('bulk')">Bulk CSV</button>
-  </div>
-</div>
-
-<div class="sec">
-  <div class="sec-title">Logo</div>
-  <div id="logo-zone" class="logo-zone" onclick="document.getElementById('logo-file').click()">
-    <input type="file" id="logo-file" accept="image/*" onchange="handleLogoFile(event)" onclick="event.stopPropagation()" />
-    <div class="logo-zone-icon">🖼️</div>
-    <div class="logo-zone-text">Click to upload logo<br><span style="font-size:10px;color:var(--subtle)">PNG · JPG · SVG</span></div>
-  </div>
-  <div id="logo-preview-row" style="display:none" class="logo-preview-wrap">
-    <img id="logo-img" src="" alt="logo" />
-    <div>
-      <div style="font-size:12px;font-weight:500;color:var(--text)" id="logo-name"></div>
-      <button class="remove-logo" onclick="removeLogo()">✕ Remove logo</button>
+    <!-- Mode -->
+    <div class="sec">
+      <div class="sec-title">Mode</div>
+      <div class="tabs">
+        <button class="tab on" onclick="setMode('single')">Single</button>
+        <button class="tab" onclick="setMode('bulk')">Bulk CSV</button>
+      </div>
     </div>
-  </div>
-  <div class="fg" style="margin-top:10px;margin-bottom:0">
-    <label>Or paste image URL</label>
-    <input id="logo-url" placeholder="https://..." oninput="handleLogoUrl()" />
-  </div>
-</div>
 
-<div id="single-panel" class="sec">
-  <div class="sec-title">Employee</div>
-  <div class="fg">
-    <label>Full name</label>
-    <input id="s-name" value="Harsh M Parmar" oninput="rerender()" />
-  </div>
-  <div class="fg">
-    <label>User ID <span style="font-weight:400;color:var(--subtle)">(auto if blank)</span></label>
-    <input id="s-uid" placeholder="e.g. HPARMAR" oninput="rerender()" style="font-family:'DM Mono',monospace;font-size:12px;" />
-  </div>
-</div>
+    <!-- Default Logo -->
+    <div class="sec">
+      <div class="sec-title">Default Logo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--subtle)">— used on all badges</span></div>
 
-<div id="bulk-panel" class="sec" style="display:none">
-  <div class="sec-title">People <span class="pill" id="bulk-count">0</span></div>
-  <div class="fg">
-    <label>Paste names or CSV</label>
-    <textarea id="bulk-csv" oninput="rerender()" placeholder="Harsh M Parmar,HPARMAR&#10;Yalini Sathieskumar&#10;John Smith,JSMITH"></textarea>
-    <div class="hint">One per line · full_name or full_name,user_id</div>
-  </div>
-</div>
+      <!-- Upload zone (shown when no logo set) -->
+      <div id="logo-zone" class="logo-zone" onclick="document.getElementById('logo-file').click()">
+        <input type="file" id="logo-file" accept="image/*" onchange="handleLogoFile(event)" onclick="event.stopPropagation()" />
+        <div class="logo-zone-icon">🖼️</div>
+        <div class="logo-zone-text">Click to upload logo<br><span style="font-size:10px;color:var(--subtle)">PNG · JPG · SVG</span></div>
+      </div>
 
-<div class="sec">
-  <div class="sec-title">Card settings</div>
-  <div class="fg">
-    <label>Site / warehouse</label>
-    <input id="f-site" value="Warehouse Operations · Oshawa 6011" oninput="rerender()" />
-  </div>
-  <div class="fg">
-    <label>Footer message</label>
-    <input id="f-footer" value="Return to charging slot while taking device" oninput="rerender()" />
-  </div>
-</div>
+      <!-- Logo set state -->
+      <div id="logo-set" style="display:none">
+        <div class="logo-set-row">
+          <img id="logo-img" src="" alt="logo" />
+          <div class="logo-set-info">
+            <div class="logo-set-name" id="logo-name">Logo</div>
+            <div class="logo-set-sub">Default for all cards</div>
+          </div>
+          <div>
+            <button class="logo-change-btn" onclick="document.getElementById('logo-file2').click()">Change</button>
+            <input type="file" id="logo-file2" accept="image/*" onchange="handleLogoFile(event)" style="display:none" />
+          </div>
+        </div>
+        <button class="logo-remove-btn" style="margin-top:6px;margin-left:2px" onclick="removeLogo()">✕ Remove logo (use default GEODIS icon)</button>
+      </div>
 
-<button class="gen-btn" onclick="rerender()">↺ Refresh preview</button>
-<div style="font-size:11px;color:var(--subtle);text-align:center;line-height:1.7">
-  Prints at 6 × 8 cm (portrait).<br>Use 100% scale · disable headers/footers.
-</div>
-```
+      <div class="fg" style="margin-top:10px;margin-bottom:0">
+        <label>Or paste image URL</label>
+        <input id="logo-url" placeholder="https://..." oninput="handleLogoUrl()" />
+      </div>
+    </div>
 
+    <!-- Single mode -->
+    <div id="single-panel" class="sec">
+      <div class="sec-title">Employee</div>
+      <div class="fg">
+        <label>Full name</label>
+        <input id="s-name" placeholder="e.g. Jane Kowalski" oninput="rerender()" />
+      </div>
+      <div class="fg">
+        <label>User ID <span style="font-weight:400;color:var(--subtle)">(auto if blank)</span></label>
+        <input id="s-uid" placeholder="e.g. JKOWALSKI" oninput="rerender()" style="font-family:'DM Mono',monospace;font-size:12px;" />
+      </div>
+      <div class="fg" style="margin-top:10px">
+        <label>Override logo for this badge <span style="font-weight:400;color:var(--subtle)">(optional)</span></label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="s-logo-url" placeholder="Paste URL or upload below" style="flex:1;font-size:12px" oninput="rerender()" />
+          <button class="logo-change-btn" style="white-space:nowrap" onclick="document.getElementById('s-logo-file').click()">Upload</button>
+          <input type="file" id="s-logo-file" accept="image/*" onchange="handleSingleLogoFile(event)" style="display:none" />
+        </div>
+        <div id="s-logo-clear" style="display:none;margin-top:4px">
+          <button class="logo-remove-btn" onclick="clearSingleLogo()">✕ Clear override — use default logo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk mode -->
+    <div id="bulk-panel" class="sec" style="display:none">
+      <div class="sec-title">People <span class="pill" id="bulk-count">0</span></div>
+      <div class="fg">
+        <label>Paste names or CSV</label>
+        <textarea id="bulk-csv" oninput="rerender()" placeholder="Jane Kowalski&#10;Marcus Webb,MWEBB&#10;Priya Nair,PNAIR"></textarea>
+        <div class="hint">One per line · <code>full_name</code> or <code>full_name,user_id</code><br>Add a 3rd column for a per-badge logo URL:<br><code>full_name,user_id,https://logo.url</code></div>
+      </div>
+      <div class="override-note">💡 To use a different logo on specific badges, add a logo URL as the 3rd column in the CSV. All other badges use the default logo above.</div>
+    </div>
+
+    <!-- Card settings -->
+    <div class="sec">
+      <div class="sec-title">Card settings</div>
+      <div class="fg">
+        <label>Site / warehouse</label>
+        <input id="f-site" value="Warehouse Operations · Oshawa 6011" oninput="rerender()" />
+      </div>
+      <div class="fg">
+        <label>Footer message</label>
+        <input id="f-footer" value="Return to charging slot while taking device" oninput="rerender()" />
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="rerender()">↺ Refresh preview</button>
+    <div style="font-size:11px;color:var(--subtle);text-align:center;line-height:1.7">
+      Prints at 6 × 8 cm (portrait).<br>100% scale · disable browser headers/footers.
+    </div>
   </aside>
 
+  <!-- PREVIEW -->
   <main class="preview">
     <div class="preview-hd">
       <h2 id="prev-title">Badge preview</h2>
       <span id="prev-meta">6 × 8 cm portrait · Print-ready</span>
     </div>
-    <div class="cards-grid" id="cards-grid"></div>
+    <div class="cards-grid" id="cards-grid">
+      <div class="empty-state">
+        <div class="ei">🪪</div>
+        <p>Enter a name above to preview your badge</p>
+      </div>
+    </div>
   </main>
 </div>
 
 <script>
   let mode = 'single';
-  let logoSrc = null;
+  let defaultLogo = null;    // global default logo src
+  let singleLogoOverride = null;  // override for single-badge mode
 
+  /* ── RANDOM NAME POOL ── */
+  const FIRST = ['Alex','Jordan','Morgan','Taylor','Casey','Riley','Avery','Quinn','Drew','Skyler','Jamie','Reese','Parker','Logan','Blake','Cameron','Sam','Robin','Charlie','Dana'];
+  const LAST  = ['Johnson','Williams','Brown','Garcia','Martinez','Lee','Walker','Hall','Allen','Young','King','Wright','Scott','Adams','Baker','Nelson','Carter','Mitchell','Perez','Roberts'];
+  function randomName() {
+    return FIRST[Math.floor(Math.random()*FIRST.length)] + ' ' + LAST[Math.floor(Math.random()*LAST.length)];
+  }
+
+  /* ── MODE ── */
   function setMode(m) {
     mode = m;
     document.getElementById('single-panel').style.display = m === 'single' ? '' : 'none';
@@ -268,38 +329,62 @@ header, .sidebar { display: none !important; }
     rerender();
   }
 
+  /* ── DEFAULT LOGO handlers ── */
   function handleLogoFile(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => setLogo(ev.target.result, file.name);
+    reader.onload = ev => setDefaultLogo(ev.target.result, file.name);
     reader.readAsDataURL(file);
   }
   function handleLogoUrl() {
     const url = document.getElementById('logo-url').value.trim();
-    if (url) setLogo(url, url.split('/').pop());
-    else { logoSrc = null; showZone(); rerender(); }
+    if (url) setDefaultLogo(url, url.split('/').pop().split('?')[0]);
+    else { defaultLogo = null; showLogoZone(); rerender(); }
   }
-  function setLogo(src, name) {
-    logoSrc = src;
+  function setDefaultLogo(src, name) {
+    defaultLogo = src;
     document.getElementById('logo-zone').style.display = 'none';
-    document.getElementById('logo-preview-row').style.display = 'flex';
+    document.getElementById('logo-set').style.display = '';
     document.getElementById('logo-img').src = src;
     document.getElementById('logo-name').textContent = name || 'Logo';
     rerender();
   }
   function removeLogo() {
-    logoSrc = null;
+    defaultLogo = null;
     document.getElementById('logo-file').value = '';
+    document.getElementById('logo-file2').value = '';
     document.getElementById('logo-url').value = '';
-    showZone();
+    showLogoZone();
     rerender();
   }
-  function showZone() {
+  function showLogoZone() {
     document.getElementById('logo-zone').style.display = '';
-    document.getElementById('logo-preview-row').style.display = 'none';
+    document.getElementById('logo-set').style.display = 'none';
   }
 
+  /* ── SINGLE BADGE LOGO OVERRIDE ── */
+  function handleSingleLogoFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      singleLogoOverride = ev.target.result;
+      document.getElementById('s-logo-url').value = '(uploaded file)';
+      document.getElementById('s-logo-clear').style.display = '';
+      rerender();
+    };
+    reader.readAsDataURL(file);
+  }
+  function clearSingleLogo() {
+    singleLogoOverride = null;
+    document.getElementById('s-logo-url').value = '';
+    document.getElementById('s-logo-file').value = '';
+    document.getElementById('s-logo-clear').style.display = 'none';
+    rerender();
+  }
+
+  /* ── UTILS ── */
   function genUID(name) {
     const parts = name.trim().split(/\s+/);
     if (!parts.length) return 'UNKNOWN';
@@ -309,8 +394,21 @@ header, .sidebar { display: none !important; }
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+  function geodisLogoSvg() {
+    return `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="19" fill="#1A4FA0"/>
+      <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.2" fill="none"/>
+      <ellipse cx="20" cy="20" rx="19" ry="8" stroke="white" stroke-width="1.2" fill="none"/>
+      <path d="M10 14 Q20 10 30 14" stroke="white" stroke-width="1" fill="none"/>
+      <circle cx="26" cy="13" r="3" fill="white"/>
+      <line x1="26" y1="10" x2="26" y2="7.2" stroke="white" stroke-width="1.2"/>
+      <line x1="28.1" y1="10.9" x2="30.1" y2="8.9" stroke="white" stroke-width="1.2"/>
+      <line x1="23.9" y1="10.9" x2="21.9" y2="8.9" stroke="white" stroke-width="1.2"/>
+    </svg>`;
+  }
 
-  function buildBadge(fullName, uid, site, footer) {
+  /* ── BUILD BADGE ── */
+  function buildBadge(fullName, uid, site, footer, logoOverride) {
     const wrap = document.createElement('div');
     wrap.className = 'card-wrap';
     const lbl = document.createElement('div');
@@ -321,18 +419,11 @@ header, .sidebar { display: none !important; }
     const badge = document.createElement('div');
     badge.className = 'badge';
 
-    const logoHtml = logoSrc
-      ? `<img src="${esc(logoSrc)}" alt="logo" />`
-      : `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-           <circle cx="20" cy="20" r="19" fill="#1A4FA0"/>
-           <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.2" fill="none"/>
-           <ellipse cx="20" cy="20" rx="19" ry="8" stroke="white" stroke-width="1.2" fill="none"/>
-           <path d="M10 14 Q20 10 30 14" stroke="white" stroke-width="1" fill="none"/>
-           <circle cx="26" cy="13" r="3" fill="white"/>
-           <line x1="26" y1="10" x2="26" y2="7.2" stroke="white" stroke-width="1.2"/>
-           <line x1="28.1" y1="10.9" x2="30.1" y2="8.9" stroke="white" stroke-width="1.2"/>
-           <line x1="23.9" y1="10.9" x2="21.9" y2="8.9" stroke="white" stroke-width="1.2"/>
-         </svg>`;
+    // Priority: per-badge override > default logo > built-in GEODIS svg
+    const activeLogo = logoOverride || defaultLogo;
+    const logoHtml = activeLogo
+      ? `<img src="${esc(activeLogo)}" alt="logo" />`
+      : geodisLogoSvg();
 
     badge.innerHTML = `
       <div class="badge-header">
@@ -353,7 +444,6 @@ header, .sidebar { display: none !important; }
       </div>
       <div class="badge-footer">${esc(footer)}</div>
     `;
-
     wrap.appendChild(badge);
     return { wrap, canvas: badge.querySelector('.barcode-canvas'), uid };
   }
@@ -361,32 +451,42 @@ header, .sidebar { display: none !important; }
   function drawBarcode(canvas, uid) {
     try {
       JsBarcode(canvas, uid || 'NOUID', {
-        format: 'CODE128',
-        width: 1.9,
-        height: 68,
-        displayValue: false,
-        margin: 0,
-        background: '#ffffff',
-        lineColor: '#000000'
+        format: 'CODE128', width: 1.9, height: 68,
+        displayValue: false, margin: 0,
+        background: '#ffffff', lineColor: '#000000'
       });
       canvas.style.maxWidth = '197px';
     } catch(e) { console.warn(e); }
   }
 
-  function rerender() {
-    mode === 'single' ? renderSingle() : renderBulk();
-  }
+  /* ── RENDER ── */
+  function rerender() { mode === 'single' ? renderSingle() : renderBulk(); }
 
   function renderSingle() {
-    const name   = document.getElementById('s-name').value.trim() || 'Name';
-    const uid    = document.getElementById('s-uid').value.trim()  || genUID(name);
-    const site   = document.getElementById('f-site').value;
-    const footer = document.getElementById('f-footer').value;
-    const grid   = document.getElementById('cards-grid');
+    const nameVal = document.getElementById('s-name').value.trim();
+    const name    = nameVal || randomName();
+    const uid     = document.getElementById('s-uid').value.trim() || genUID(name);
+    const site    = document.getElementById('f-site').value;
+    const footer  = document.getElementById('f-footer').value;
+
+    // single logo override: uploaded file takes priority, else URL field
+    const urlField = document.getElementById('s-logo-url').value.trim();
+    const override = singleLogoOverride || (urlField && urlField !== '(uploaded file)' ? urlField : null);
+
+    const grid = document.getElementById('cards-grid');
     grid.innerHTML = '';
     document.getElementById('prev-title').textContent = 'Badge preview';
     document.getElementById('prev-meta').textContent  = '6 × 8 cm portrait · Print-ready';
-    const { wrap, canvas } = buildBadge(name, uid, site, footer);
+
+    // show placeholder hint if name field is empty
+    if (!nameVal) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:11px;color:var(--subtle);margin-bottom:8px;width:100%';
+      hint.textContent = '(showing random preview — type a name above)';
+      grid.appendChild(hint);
+    }
+
+    const { wrap, canvas } = buildBadge(name, uid, site, footer, override);
     grid.appendChild(wrap);
     drawBarcode(canvas, uid);
   }
@@ -399,19 +499,21 @@ header, .sidebar { display: none !important; }
     grid.innerHTML = '';
     if (!raw) {
       document.getElementById('bulk-count').textContent = '0';
-      grid.innerHTML = '<div class="empty-state"><div class="ei">🪪</div><p>Paste names above</p></div>';
+      grid.innerHTML = '<div class="empty-state"><div class="ei">🪪</div><p>Paste names above to generate badges</p></div>';
       return;
     }
     const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
     document.getElementById('bulk-count').textContent = lines.length;
     document.getElementById('prev-title').textContent = `${lines.length} badge${lines.length!==1?'s':''}`;
+    document.getElementById('prev-meta').textContent  = '6 × 8 cm portrait · Print-ready';
     const todo = [];
     lines.forEach(line => {
       const parts = line.split(',');
       const name  = parts[0].trim();
       const uid   = parts[1] ? parts[1].trim() : genUID(name);
+      const perBadgeLogo = parts[2] ? parts[2].trim() : null;
       if (!name) return;
-      const { wrap, canvas } = buildBadge(name, uid, site, footer);
+      const { wrap, canvas } = buildBadge(name, uid, site, footer, perBadgeLogo);
       grid.appendChild(wrap);
       todo.push({ canvas, uid });
     });
@@ -420,6 +522,5 @@ header, .sidebar { display: none !important; }
 
   window.addEventListener('DOMContentLoaded', () => setTimeout(rerender, 150));
 </script>
-
 </body>
 </html>
