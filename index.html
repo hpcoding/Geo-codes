@@ -10,54 +10,72 @@
 
 <script>
 /* ══════════════════════════════════
-   SUPABASE CONFIG
+   GITHUB CONFIG
 ══════════════════════════════════ */
-const SUPA_URL = 'https://uqeevqwpcmsenuvwswlp.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZWV2cXdwY21zZW51dndzd2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MjQwMjUsImV4cCI6MjA5MzIwMDAyNX0.9tpSZ-Q_iispPsRZpnPWXCAI8pS5sjZ7Ty2c8bK41bg';
-const TABLE   = 'employees';
+const GH_TOKEN  = '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';
+const GH_REPO   = 'hpcoding/Geo-codes';
+const GH_FILE   = 'employees.json';
+const GH_BRANCH = 'main';
+const GH_API    = 'https://api.github.com/repos/' + GH_REPO + '/contents/' + GH_FILE;
 
-const supa = {
+const gh = {
   headers: {
-    'apikey': SUPA_KEY,
-    'Authorization': 'Bearer ' + SUPA_KEY,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
+    'Authorization': 'token ' + GH_TOKEN,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
   },
+
+  async getFile() {
+    const r = await fetch(GH_API + '?ref=' + GH_BRANCH + '&t=' + Date.now(), { headers: this.headers });
+    if (r.status === 404) return { content: [], sha: null };
+    if (!r.ok) throw new Error('GitHub read failed: ' + r.status);
+    const data = await r.json();
+    const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
+    return { content: decoded, sha: data.sha };
+  },
+
+  async writeFile(employees, sha) {
+    const body = { message: 'Update employees', content: btoa(unescape(encodeURIComponent(JSON.stringify(employees, null, 2)))), branch: GH_BRANCH };
+    if (sha) body.sha = sha;
+    const r = await fetch(GH_API, { method: 'PUT', headers: this.headers, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('GitHub write failed: ' + r.status);
+    return r.json();
+  },
+
   async getAll() {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?order=created_at.desc&limit=500`, {
-      method: 'GET', mode: 'cors', cache: 'no-cache', headers: this.headers
-    });
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
+    const { content } = await this.getFile();
+    return content;
   },
+
   async insert(emp) {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${TABLE}`, {
-      method: 'POST', mode: 'cors', cache: 'no-cache', headers: this.headers,
-      body: JSON.stringify(emp)
-    });
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
+    const { content, sha } = await this.getFile();
+    content.unshift(emp);
+    await this.writeFile(content, sha);
+    return emp;
   },
+
   async remove(id) {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?id=eq.${id}`, {
-      method: 'DELETE', mode: 'cors', cache: 'no-cache', headers: this.headers
-    });
-    if (!r.ok) throw new Error(await r.text());
+    const { content, sha } = await this.getFile();
+    const updated = content.filter(e => e.id !== id);
+    await this.writeFile(updated, sha);
   },
-  // Poll for changes every 5 seconds
+
   listen(cb) {
-    let last = null;
+    let lastSig = null;
     const poll = async () => {
       try {
         const data = await this.getAll();
-        const sig = JSON.stringify(data.map(d=>d.id+d.savedAt));
-        if (sig !== last) { last = sig; cb(data); }
-      } catch(e) { console.error('Poll error:', e); }
+        const sig = data.map(d => d.id).join(',');
+        if (sig !== lastSig) { lastSig = sig; cb(data); }
+      } catch(e) { console.error('Poll error:', e.message); }
     };
     poll();
-    return setInterval(poll, 5000);
+    return setInterval(poll, 8000);
   }
 };
+
+// Alias so the rest of the code works unchanged
+const supa = gh;
 </script>
 
 <style>
