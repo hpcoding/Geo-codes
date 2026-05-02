@@ -24,7 +24,7 @@ header {
   height: 56px; position: sticky; top: 0; z-index: 200;
   box-shadow: 0 2px 16px rgba(15,48,112,0.35);
 }
-.hlogo svg { width: 32px; height: 32px; }
+.hlogo img { width: 36px; height: 36px; object-fit: contain; border-radius: 4px; }
 .hbrand { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; }
 .hdiv { width: 1px; height: 22px; background: rgba(255,255,255,0.3); margin: 0 6px; }
 .htitle { font-size: 12px; color: rgba(255,255,255,0.72); }
@@ -168,15 +168,7 @@ header {
 
 <header>
   <div class="hlogo">
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="19" fill="white" fill-opacity="0.18"/>
-      <ellipse cx="20" cy="20" rx="12" ry="19" stroke="white" stroke-width="1.5" fill="none"/>
-      <ellipse cx="20" cy="20" rx="19" ry="8.5" stroke="white" stroke-width="1.5" fill="none"/>
-      <circle cx="26.5" cy="13" r="3.2" fill="white" fill-opacity="0.95"/>
-      <line x1="26.5" y1="9.8" x2="26.5" y2="7" stroke="white" stroke-width="1.4"/>
-      <line x1="28.8" y1="10.9" x2="31" y2="8.7" stroke="white" stroke-width="1.4"/>
-      <line x1="24.2" y1="10.9" x2="22" y2="8.7" stroke="white" stroke-width="1.4"/>
-    </svg>
+    <img id="header-logo" src="" alt="GEODIS" style="width:36px;height:36px;object-fit:contain;border-radius:4px;" />
   </div>
   <span class="hbrand">GEODIS</span>
   <div class="hdiv"></div>
@@ -751,6 +743,7 @@ function loadToEditor(id) {
 ══════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('logo-img').src = HARDCODED_LOGO;
+  document.getElementById('header-logo').src = HARDCODED_LOGO;
   loadEmployees();
   setTimeout(rerender, 150);
 });
