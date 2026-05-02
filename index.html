@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -7,77 +6,6 @@
 <title>GEODIS Badge Generator — Oshawa 6011</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-
-<script>
-/* ══════════════════════════════════
-   GITHUB CONFIG
-══════════════════════════════════ */
-const GH_TOKEN  = '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';
-const GH_REPO   = 'hpcoding/Geo-codes';
-const GH_FILE   = 'employees.json';
-const GH_BRANCH = 'main';
-const GH_API    = 'https://api.github.com/repos/' + GH_REPO + '/contents/' + GH_FILE;
-
-const gh = {
-  headers: {
-    'Authorization': 'token ' + GH_TOKEN,
-    'Accept': 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json'
-  },
-
-  async getFile() {
-    const r = await fetch(GH_API + '?ref=' + GH_BRANCH + '&t=' + Date.now(), { headers: this.headers });
-    if (r.status === 404) return { content: [], sha: null };
-    if (!r.ok) throw new Error('GitHub read failed: ' + r.status);
-    const data = await r.json();
-    const decoded = JSON.parse(atob(data.content.replace(/\n/g, '')));
-    return { content: decoded, sha: data.sha };
-  },
-
-  async writeFile(employees, sha) {
-    const body = { message: 'Update employees', content: btoa(unescape(encodeURIComponent(JSON.stringify(employees, null, 2)))), branch: GH_BRANCH };
-    if (sha) body.sha = sha;
-    const r = await fetch(GH_API, { method: 'PUT', headers: this.headers, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error('GitHub write failed: ' + r.status);
-    return r.json();
-  },
-
-  async getAll() {
-    const { content } = await this.getFile();
-    return content;
-  },
-
-  async insert(emp) {
-    const { content, sha } = await this.getFile();
-    content.unshift(emp);
-    await this.writeFile(content, sha);
-    return emp;
-  },
-
-  async remove(id) {
-    const { content, sha } = await this.getFile();
-    const updated = content.filter(e => e.id !== id);
-    await this.writeFile(updated, sha);
-  },
-
-  listen(cb) {
-    let lastSig = null;
-    const poll = async () => {
-      try {
-        const data = await this.getAll();
-        const sig = data.map(d => d.id).join(',');
-        if (sig !== lastSig) { lastSig = sig; cb(data); }
-      } catch(e) { console.error('Poll error:', e.message); }
-    };
-    poll();
-    return setInterval(poll, 8000);
-  }
-};
-
-// Alias so the rest of the code works unchanged
-const supa = gh;
-</script>
-
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -90,7 +18,6 @@ const supa = gh;
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-/* HEADER */
 header {
   background: #1A4FA0; color: #fff;
   padding: 0 1.5rem; display: flex; align-items: center; gap: 10px;
@@ -102,26 +29,20 @@ header {
 .hdiv { width: 1px; height: 22px; background: rgba(255,255,255,0.3); margin: 0 6px; }
 .htitle { font-size: 12px; color: rgba(255,255,255,0.72); }
 .hspace { flex: 1; }
-.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; flex-shrink: 0; transition: background 0.4s; }
-.sync-dot.live { background: #4ade80; }
-.sync-dot.err  { background: #f87171; }
-.sync-label { font-size: 11px; color: rgba(255,255,255,0.65); margin-right: 8px; }
 .hbtn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.3); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; white-space: nowrap; }
 .hbtn:hover { background: rgba(255,255,255,0.28); }
 .hbtn.success { background: rgba(22,163,74,0.3); border-color: rgba(100,220,130,0.4); }
 .hbtn.success:hover { background: rgba(22,163,74,0.45); }
+.hbtn.warn { background: rgba(234,179,8,0.3); border-color: rgba(234,179,8,0.5); }
 
-/* TOP TABS */
 .top-tabs { display: flex; height: 40px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 100; }
 .ttab { flex: 1; max-width: 180px; padding: 0 1rem; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
 .ttab.on { color: var(--blue); border-bottom-color: var(--blue); }
 .ttab-badge { background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 7px; }
 
-/* PAGES */
 .page { display: none; }
 .page.on { display: block; }
 
-/* CREATE LAYOUT */
 .create-layout { display: grid; grid-template-columns: 330px 1fr; min-height: calc(100vh - 96px); }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
 .sec { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.1rem; }
@@ -139,25 +60,27 @@ header {
 .fg textarea { resize: vertical; min-height: 90px; font-family: 'DM Mono', monospace; font-size: 12px; }
 .hint { font-size: 11px; color: var(--subtle); margin-top: 3px; line-height: 1.5; }
 
-.logo-zone { border: 1.5px dashed rgba(26,79,160,0.25); border-radius: var(--rs); padding: 16px; text-align: center; cursor: pointer; background: white; position: relative; transition: all 0.15s; }
-.logo-zone:hover { border-color: var(--blue); background: var(--blue-light); }
-.logo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .logo-set-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border: 1px solid var(--border); border-radius: var(--rs); }
 .logo-set-row img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; border: 1px solid var(--border); }
 .logo-set-info { flex: 1; min-width: 0; }
-.logo-set-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logo-set-name { font-size: 12px; font-weight: 500; color: var(--text); }
 .logo-set-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
-.logo-change-btn { font-size: 11px; color: var(--blue); cursor: pointer; background: var(--blue-light); border: none; border-radius: 4px; padding: 4px 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; white-space: nowrap; }
+.logo-change-btn { font-size: 11px; color: var(--blue); cursor: pointer; background: var(--blue-light); border: none; border-radius: 4px; padding: 4px 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; }
 .logo-remove-btn { font-size: 11px; color: #c0392b; cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; margin-top: 4px; display: block; }
 .override-note { font-size: 11px; color: var(--muted); background: var(--blue-light); border-radius: 6px; padding: 7px 10px; line-height: 1.5; margin-top: 4px; }
 
 .save-btn { width: 100%; padding: 10px; background: var(--green); color: white; border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
 .save-btn:hover { background: #15803d; }
-.save-btn:disabled { background: #86efac; cursor: not-allowed; }
 .gen-btn { width: 100%; padding: 10px; background: var(--blue); color: white; border: none; border-radius: var(--rs); font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; margin-bottom: 8px; }
 .gen-btn:hover { background: var(--blue-dark); }
 
-/* PREVIEW */
+/* sync banner */
+.sync-banner { background: #fffbeb; border: 1px solid #f59e0b; border-radius: var(--rs); padding: 10px 12px; font-size: 12px; color: #92400e; line-height: 1.5; }
+.sync-banner b { color: #78350f; }
+.sync-banner button { margin-top: 8px; width: 100%; padding: 8px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.sync-banner button:hover { background: #d97706; }
+.sync-ok { background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--rs); padding: 8px 12px; font-size: 12px; color: #166534; }
+
 .preview-area { padding: 2rem; overflow-y: auto; background: var(--bg); background-image: radial-gradient(circle at 1px 1px, rgba(26,79,160,0.07) 1px, transparent 0); background-size: 20px 20px; }
 .preview-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
 .preview-hd h2 { font-size: 15px; font-weight: 600; }
@@ -166,9 +89,9 @@ header {
 .card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .card-lbl { font-size: 11px; color: var(--subtle); font-family: 'DM Mono', monospace; }
 
-/* SAVED PAGE */
+/* saved page */
 .saved-page { padding: 2rem; min-height: calc(100vh - 96px); }
-.saved-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.saved-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
 .saved-toolbar h2 { font-size: 16px; font-weight: 600; flex: 1; }
 .action-btn { display: flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: var(--rs); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border); transition: all 0.15s; background: white; color: var(--text); white-space: nowrap; }
 .action-btn:hover { background: var(--surface2); }
@@ -179,14 +102,20 @@ header {
 .search-box { padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--rs); font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; width: 200px; }
 .search-box:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,79,160,0.1); }
 
+/* upload json prompt banner */
+.upload-prompt { background: #fff7ed; border: 1.5px solid #f59e0b; border-radius: var(--r); padding: 14px 16px; margin-bottom: 1.2rem; display: none; }
+.upload-prompt.show { display: block; }
+.upload-prompt h3 { font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 6px; }
+.upload-prompt p { font-size: 12px; color: #78350f; line-height: 1.6; }
+.upload-prompt .step { font-size: 12px; color: #78350f; margin-top: 4px; }
+.upload-prompt .step b { color: #451a03; }
+
 .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .emp-card { background: white; border: 1.5px solid var(--border); border-radius: var(--r); padding: 14px; cursor: pointer; transition: all 0.15s; position: relative; user-select: none; }
 .emp-card:hover { border-color: rgba(26,79,160,0.35); box-shadow: 0 2px 12px rgba(26,79,160,0.1); }
 .emp-card.selected { border-color: var(--blue); background: var(--blue-light); box-shadow: 0 0 0 2px rgba(26,79,160,0.15); }
-.emp-card-check { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
-.emp-card.selected .emp-card-check { background: var(--blue); border-color: var(--blue); }
-.check-icon { display: none; color: white; font-size: 11px; font-weight: 700; }
-.emp-card.selected .check-icon { display: block; }
+.emp-card-check { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.emp-card.selected .emp-card-check { background: var(--blue); border-color: var(--blue); color: white; font-size: 11px; font-weight: 700; }
 .emp-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; margin-bottom: 10px; }
 .emp-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
 .emp-uid { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
@@ -198,9 +127,7 @@ header {
 .emp-act-btn.del:hover { background: var(--red-light); color: var(--red); border-color: rgba(220,38,38,0.3); }
 
 .pill { display: inline-flex; align-items: center; justify-content: center; background: var(--blue-light); color: var(--blue); border-radius: 20px; font-size: 11px; font-weight: 600; padding: 1px 9px; margin-left: 6px; }
-.spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.empty-state, .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; color: var(--subtle); text-align: center; }
 .empty-state .ei { font-size: 40px; margin-bottom: 1rem; opacity: 0.35; }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; }
@@ -210,13 +137,13 @@ header {
 .badge::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 38px; height: 14px; background: #d4d4d4; border-radius: 20px; border: 1.5px solid #999; }
 .badge-header { display: flex; align-items: flex-start; gap: 8px; width: 100%; margin-bottom: 8px; }
 .badge-logo-block { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-.badge-logo-block img, .badge-logo-block svg { width: 42px; height: 42px; object-fit: contain; }
+.badge-logo-block img { width: 42px; height: 42px; object-fit: contain; }
 .badge-brand { display: none; }
 .badge-title-block { flex: 1; padding-top: 4px; }
 .badge-title { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
 .badge-subtitle { font-size: 9px; color: #444; margin-top: 3px; line-height: 1.4; }
 .badge-rule { width: 100%; height: 1px; background: #ddd; margin: 4px 0 10px; }
-.badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.2; width: 100%; margin-bottom: 14px; }
+.badge-name { font-size: 19px; font-weight: 700; color: #111; text-align: center; font-family: Arial, sans-serif; line-height: 1.25; width: 100%; margin-bottom: 14px; word-break: break-word; overflow-wrap: break-word; hyphens: auto; display: block; }
 .barcode-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .barcode-id { font-size: 11px; font-weight: 700; color: #1A4FA0; letter-spacing: 2.5px; margin-top: 4px; font-family: Arial, sans-serif; }
 .badge-footer { font-size: 8px; color: #555; text-align: center; border-top: 0.5px solid #ddd; padding-top: 8px; margin-top: auto; width: 100%; font-family: Arial, sans-serif; line-height: 1.5; }
@@ -236,7 +163,6 @@ header {
   .preview-area { padding: 1rem; }
 }
 </style>
-
 </head>
 <body>
 
@@ -256,9 +182,6 @@ header {
   <div class="hdiv"></div>
   <span class="htitle">RF &amp; Radio Device Badge Generator</span>
   <div class="hspace"></div>
-  <div class="sync-dot" id="sync-dot"></div>
-  <span class="sync-label" id="sync-label">Connecting…</span>
-  <span id="hdr-sel-info" style="font-size:12px;color:rgba(255,255,255,0.75);display:none"></span>
   <button id="hdr-print-sel" class="hbtn success" onclick="printSelected()" style="display:none">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     Print selected
@@ -282,10 +205,10 @@ header {
 </div>
 
 <!-- CREATE PAGE -->
-
 <div class="page on" id="page-create">
 <div class="create-layout">
   <aside class="sidebar">
+
     <div class="sec">
       <div class="sec-title">Mode</div>
       <div class="tabs">
@@ -294,88 +217,79 @@ header {
       </div>
     </div>
 
-```
-<div class="sec">
-  <div class="sec-title">Default Logo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--subtle)">— all badges</span></div>
-  <div id="logo-zone" class="logo-zone" onclick="document.getElementById('logo-file').click()" style="display:none">
-    <input type="file" id="logo-file" accept="image/*" onchange="handleLogoFile(event)" onclick="event.stopPropagation()" />
-    <div style="font-size:22px;margin-bottom:4px">🖼️</div>
-    <div style="font-size:12px;color:var(--muted);line-height:1.5">Click to upload logo<br><span style="font-size:10px;color:var(--subtle)">PNG · JPG · SVG</span></div>
-  </div>
-  <div id="logo-set">
-    <div class="logo-set-row">
-      <img id="logo-img" src="" alt="logo" />
-      <div class="logo-set-info">
-        <div class="logo-set-name" id="logo-name">GEODIS Logo (default)</div>
-        <div class="logo-set-sub">Used on all badges</div>
+    <div class="sec">
+      <div class="sec-title">Default Logo</div>
+      <div id="logo-set">
+        <div class="logo-set-row">
+          <img id="logo-img" src="" alt="logo" />
+          <div class="logo-set-info">
+            <div class="logo-set-name" id="logo-name">GEODIS Logo (default)</div>
+            <div class="logo-set-sub">Used on all badges</div>
+          </div>
+          <button class="logo-change-btn" onclick="document.getElementById('logo-file2').click()">Change</button>
+          <input type="file" id="logo-file2" accept="image/*" onchange="handleLogoFile(event)" style="display:none" />
+        </div>
+        <button class="logo-remove-btn" onclick="resetLogo()">↺ Reset to default GEODIS logo</button>
       </div>
-      <button class="logo-change-btn" onclick="document.getElementById('logo-file2').click()">Change</button>
-      <input type="file" id="logo-file2" accept="image/*" onchange="handleLogoFile(event)" style="display:none" />
+      <div class="fg" style="margin-top:10px;margin-bottom:0">
+        <label>Or paste image URL</label>
+        <input id="logo-url" placeholder="https://..." oninput="handleLogoUrl()" />
+      </div>
     </div>
-    <button class="logo-remove-btn" onclick="resetLogo()">↺ Reset to default GEODIS logo</button>
-  </div>
-  <div class="fg" style="margin-top:10px;margin-bottom:0">
-    <label>Or paste image URL</label>
-    <input id="logo-url" placeholder="https://..." oninput="handleLogoUrl()" />
-  </div>
-</div>
 
-<div id="single-panel" class="sec">
-  <div class="sec-title">Employee</div>
-  <div class="fg">
-    <label>Full name</label>
-    <input id="s-name" placeholder="e.g. Jane Kowalski" oninput="rerender()" />
-  </div>
-  <div class="fg">
-    <label>User ID <span style="font-weight:400;color:var(--subtle)">(auto if blank)</span></label>
-    <input id="s-uid" placeholder="e.g. JKOWALSKI" oninput="rerender()" style="font-family:'DM Mono',monospace;font-size:12px;" />
-  </div>
-  <div class="fg" style="margin-top:6px">
-    <label>Override logo <span style="font-weight:400;color:var(--subtle)">(optional)</span></label>
-    <div style="display:flex;gap:6px;align-items:center">
-      <input id="s-logo-url" placeholder="Paste URL or upload" style="flex:1;font-size:12px" oninput="rerender()" />
-      <button class="logo-change-btn" onclick="document.getElementById('s-logo-file').click()">Upload</button>
-      <input type="file" id="s-logo-file" accept="image/*" onchange="handleSingleLogoFile(event)" style="display:none" />
+    <div id="single-panel" class="sec">
+      <div class="sec-title">Employee</div>
+      <div class="fg">
+        <label>Full name</label>
+        <input id="s-name" placeholder="e.g. Jane Kowalski" oninput="rerender()" />
+      </div>
+      <div class="fg">
+        <label>User ID <span style="font-weight:400;color:var(--subtle)">(auto if blank)</span></label>
+        <input id="s-uid" placeholder="e.g. JKOWALSKI" oninput="rerender()" style="font-family:'DM Mono',monospace;font-size:12px;" />
+      </div>
+      <div class="fg" style="margin-top:6px">
+        <label>Override logo <span style="font-weight:400;color:var(--subtle)">(optional)</span></label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="s-logo-url" placeholder="Paste URL or upload" style="flex:1;font-size:12px" oninput="rerender()" />
+          <button class="logo-change-btn" onclick="document.getElementById('s-logo-file').click()">Upload</button>
+          <input type="file" id="s-logo-file" accept="image/*" onchange="handleSingleLogoFile(event)" style="display:none" />
+        </div>
+        <div id="s-logo-clear" style="display:none;margin-top:4px">
+          <button class="logo-remove-btn" onclick="clearSingleLogo()">✕ Clear override</button>
+        </div>
+      </div>
     </div>
-    <div id="s-logo-clear" style="display:none;margin-top:4px">
-      <button class="logo-remove-btn" onclick="clearSingleLogo()">✕ Clear override</button>
+
+    <div id="bulk-panel" class="sec" style="display:none">
+      <div class="sec-title">People <span class="pill" id="bulk-count">0</span></div>
+      <div class="fg">
+        <label>Paste names or CSV</label>
+        <textarea id="bulk-csv" oninput="rerender()" placeholder="Jane Kowalski&#10;Marcus Webb,MWEBB&#10;Priya Nair,PNAIR"></textarea>
+        <div class="hint">full_name or full_name,user_id</div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div id="bulk-panel" class="sec" style="display:none">
-  <div class="sec-title">People <span class="pill" id="bulk-count">0</span></div>
-  <div class="fg">
-    <label>Paste names or CSV</label>
-    <textarea id="bulk-csv" oninput="rerender()" placeholder="Jane Kowalski&#10;Marcus Webb,MWEBB&#10;Priya Nair,PNAIR"></textarea>
-    <div class="hint">full_name or full_name,user_id<br>3rd column = per-badge logo URL</div>
-  </div>
-  <div class="override-note">💡 Add logo URL as 3rd CSV column to override per badge.</div>
-</div>
+    <div class="sec">
+      <div class="sec-title">Card settings</div>
+      <div class="fg">
+        <label>Site / warehouse</label>
+        <input id="f-site" value="Warehouse Operations · Oshawa 6011" oninput="rerender()" />
+      </div>
+      <div class="fg">
+        <label>Footer message</label>
+        <input id="f-footer" value="Employee Attendance Barcode" oninput="rerender()" />
+      </div>
+    </div>
 
-<div class="sec">
-  <div class="sec-title">Card settings</div>
-  <div class="fg">
-    <label>Site / warehouse</label>
-    <input id="f-site" value="Warehouse Operations · Oshawa 6011" oninput="rerender()" />
-  </div>
-  <div class="fg">
-    <label>Footer message</label>
-    <input id="f-footer" value="Employee Attendance Barcode" oninput="rerender()" />
-  </div>
-</div>
+    <button class="gen-btn" onclick="rerender()">↺ Refresh preview</button>
+    <button class="save-btn" onclick="saveEmployee()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save to employee library
+    </button>
 
-<button class="gen-btn" onclick="rerender()">↺ Refresh preview</button>
-<button class="save-btn" id="save-btn" onclick="saveToSupabase()">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-  Save to employee library
-</button>
-<div style="font-size:11px;color:var(--subtle);text-align:center;line-height:1.7">
-  Prints at 6 × 8 cm (portrait).<br>100% scale · disable headers/footers.<br>
-  <span style="color:var(--blue);font-weight:500">☁️ Synced across all devices</span>
-</div>
-```
-
+    <div style="font-size:11px;color:var(--subtle);text-align:center;line-height:1.7">
+      Prints at 6 × 8 cm (portrait).<br>100% scale · disable headers/footers.
+    </div>
   </aside>
 
   <div class="preview-area">
@@ -391,9 +305,20 @@ header {
 </div>
 
 <!-- SAVED PAGE -->
-
 <div class="page" id="page-saved">
 <div class="saved-page">
+
+  <!-- Upload prompt — shown when there are pending unsaved changes -->
+  <div class="upload-prompt" id="upload-prompt">
+    <h3>📤 Upload employees.json to sync all devices</h3>
+    <p>You've added or removed employees. To sync to all devices, upload the file to GitHub:</p>
+    <div class="step">1. Click <b>Download employees.json</b> below</div>
+    <div class="step">2. Go to <b>github.com/hpcoding/Geo-codes</b></div>
+    <div class="step">3. Click <b>employees.json → Edit (pencil) → ⋯ → Upload file</b> and replace it</div>
+    <div class="step">4. Click <b>Commit changes</b> — done! All devices sync on next page load</div>
+    <button onclick="downloadJSON()">⬇ Download employees.json</button>
+  </div>
+
   <div class="saved-toolbar">
     <h2>Employee library <span class="pill" id="lib-count-pill">0</span></h2>
     <input class="search-box" id="lib-search" placeholder="Search name or ID…" oninput="renderLibrary()" />
@@ -407,9 +332,13 @@ header {
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
       Delete selected
     </button>
+    <button class="action-btn" onclick="downloadJSON()" title="Download employees.json to upload to GitHub">
+      ⬇ Download JSON
+    </button>
   </div>
+
   <div id="emp-grid" class="emp-grid">
-    <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><p>Loading from cloud…</p></div>
+    <div class="empty-state"><div class="ei">👥</div><p>No saved employees yet</p><small style="margin-top:4px">Create a badge and click Save</small></div>
   </div>
 </div>
 </div>
@@ -418,45 +347,58 @@ header {
 
 <script>
 /* ══════════════════════════════════
-   STATE
+   HARDCODED LOGO + STATE
 ══════════════════════════════════ */
 const HARDCODED_LOGO = 'data:image/png;base64,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';
-let defaultLogo      = HARDCODED_LOGO;
+let defaultLogo = HARDCODED_LOGO;
 let singleLogoOverride = null;
-let mode        = 'single';
-let libraryData = [];
+let mode = 'single';
+let libraryData = [];   // loaded from employees.json on the repo
 let selectedIds = new Set();
+let hasUnsavedChanges = false;
 
-const FIRST = ['Alex','Jordan','Morgan','Taylor','Casey','Riley','Avery','Quinn','Drew','Skyler','Jamie','Reese','Parker','Logan','Blake','Cameron','Sam','Robin','Charlie','Dana'];
-const LAST  = ['Johnson','Williams','Brown','Garcia','Martinez','Lee','Walker','Hall','Allen','Young','King','Wright','Scott','Adams','Baker','Nelson','Carter','Mitchell','Perez','Roberts'];
+const EMPLOYEES_URL = 'https://hpcoding.github.io/Geo-codes/employees.json';
+
+const FIRST = ['Alex','Jordan','Morgan','Taylor','Casey','Riley','Avery','Quinn','Drew','Skyler'];
+const LAST  = ['Johnson','Williams','Brown','Garcia','Martinez','Lee','Walker','Hall','Allen','Young'];
 function randomName() { return FIRST[Math.floor(Math.random()*FIRST.length)]+' '+LAST[Math.floor(Math.random()*LAST.length)]; }
 
 /* ══════════════════════════════════
-   SUPABASE INIT + LIVE POLL
+   LOAD employees.json FROM GITHUB PAGES
+   (plain static file fetch — never blocked)
 ══════════════════════════════════ */
-function initDB() {
-  setSyncStatus('connecting', 'Connecting…');
-  supa.listen(function(data) {
-    libraryData = data;
+async function loadEmployees() {
+  try {
+    const r = await fetch(EMPLOYEES_URL + '?t=' + Date.now());
+    if (!r.ok) { libraryData = []; return; }
+    libraryData = await r.json();
     updateCount();
-    setSyncStatus('live', 'Live ✓');
     if (document.getElementById('page-saved').classList.contains('on')) renderLibrary();
-  });
+  } catch(e) {
+    console.warn('Could not load employees.json:', e.message);
+    libraryData = libraryData.length ? libraryData : [];
+  }
 }
 
-function setSyncStatus(state, label) {
-  var dot = document.getElementById('sync-dot');
-  var lbl = document.getElementById('sync-label');
-  dot.className = 'sync-dot' + (state === 'live' ? ' live' : state === 'err' ? ' err' : '');
-  lbl.textContent = label;
+/* ══════════════════════════════════
+   DOWNLOAD employees.json
+══════════════════════════════════ */
+function downloadJSON() {
+  const blob = new Blob([JSON.stringify(libraryData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'employees.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('📥 Downloaded — upload this file to GitHub to sync all devices');
 }
 
 /* ══════════════════════════════════
    PAGE NAV
 ══════════════════════════════════ */
 function showPage(p) {
-  document.querySelectorAll('.page').forEach(function(el){ el.classList.remove('on'); });
-  document.querySelectorAll('.ttab').forEach(function(el){ el.classList.remove('on'); });
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.ttab').forEach(el => el.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('on');
   document.getElementById('ttab-'+p).classList.add('on');
   if (p === 'saved') renderLibrary();
@@ -469,9 +411,9 @@ function setMode(m) {
   mode = m;
   document.getElementById('single-panel').style.display = m==='single' ? '' : 'none';
   document.getElementById('bulk-panel').style.display   = m==='bulk'   ? '' : 'none';
-  document.querySelectorAll('.tab').forEach(function(t,i){
-    t.classList.toggle('on', (i===0&&m==='single')||(i===1&&m==='bulk'));
-  });
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('on', (i===0&&m==='single')||(i===1&&m==='bulk'))
+  );
   rerender();
 }
 
@@ -479,37 +421,33 @@ function setMode(m) {
    LOGO
 ══════════════════════════════════ */
 function handleLogoFile(e) {
-  var file = e.target.files[0]; if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) { setDefaultLogo(ev.target.result, file.name); };
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => setDefaultLogo(ev.target.result, file.name);
   reader.readAsDataURL(file);
 }
 function handleLogoUrl() {
-  var url = document.getElementById('logo-url').value.trim();
+  const url = document.getElementById('logo-url').value.trim();
   if (url) setDefaultLogo(url, url.split('/').pop().split('?')[0]);
   else resetLogo();
 }
 function setDefaultLogo(src, name) {
   defaultLogo = src;
-  document.getElementById('logo-zone').style.display = 'none';
-  document.getElementById('logo-set').style.display = '';
   document.getElementById('logo-img').src = src;
-  document.getElementById('logo-name').textContent = name || 'Logo';
+  document.getElementById('logo-name').textContent = name || 'Custom Logo';
   rerender();
 }
 function resetLogo() {
   defaultLogo = HARDCODED_LOGO;
-  document.getElementById('logo-zone').style.display = 'none';
-  document.getElementById('logo-set').style.display = '';
   document.getElementById('logo-img').src = HARDCODED_LOGO;
   document.getElementById('logo-name').textContent = 'GEODIS Logo (default)';
   document.getElementById('logo-url').value = '';
   rerender();
 }
 function handleSingleLogoFile(e) {
-  var file = e.target.files[0]; if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
     singleLogoOverride = ev.target.result;
     document.getElementById('s-logo-url').value = '(uploaded file)';
     document.getElementById('s-logo-clear').style.display = '';
@@ -529,46 +467,47 @@ function clearSingleLogo() {
    UTILS
 ══════════════════════════════════ */
 function genUID(name) {
-  var parts = name.trim().split(/\s+/);
-  if (!parts.length) return 'UNKNOWN';
-  if (parts.length === 1) return parts[0].substring(0,7).toUpperCase();
-  return (parts[0][0]+parts[parts.length-1]).substring(0,10).toUpperCase();
+  const p = name.trim().split(/\s+/);
+  if (!p.length) return 'UNKNOWN';
+  if (p.length === 1) return p[0].substring(0,7).toUpperCase();
+  return (p[0][0]+p[p.length-1]).substring(0,10).toUpperCase();
 }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function logoImg(src) { return '<img src="'+esc(src)+'" alt="logo" style="width:42px;height:42px;object-fit:contain" />'; }
-function initials(name) {
-  var p = (name||'').trim().split(/\s+/);
-  return p.length>=2 ? (p[0][0]+p[p.length-1][0]).toUpperCase() : (name||'?').substring(0,2).toUpperCase();
-}
+function initials(n) { const p=(n||'').trim().split(/\s+/); return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(n||'?').substring(0,2).toUpperCase(); }
+function uuid() { return Date.now().toString(36)+Math.random().toString(36).substring(2); }
 function showToast(msg) {
-  var t = document.getElementById('toast');
+  const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 function updateCount() {
-  var n = libraryData.length;
+  const n = libraryData.length;
   document.getElementById('saved-count-badge').textContent = n;
   document.getElementById('lib-count-pill').textContent = n;
 }
+function markChanged() {
+  hasUnsavedChanges = true;
+  document.getElementById('upload-prompt').classList.add('show');
+}
 
 /* ══════════════════════════════════
-   BUILD BADGE ELEMENT
+   BUILD BADGE
 ══════════════════════════════════ */
 function buildBadgeEl(emp) {
-  var badge = document.createElement('div');
+  const badge = document.createElement('div');
   badge.className = 'badge';
-  var activeLogo = emp.logoOverride || emp.defaultLogo || defaultLogo || HARDCODED_LOGO;
+  const logo = emp.logoOverride || emp.defaultLogo || defaultLogo;
   badge.innerHTML =
-    '<div class="badge-header">' +
-      '<div class="badge-logo-block">'+logoImg(activeLogo)+'<div class="badge-brand">GEODIS</div></div>' +
-      '<div class="badge-title-block">' +
-        '<div class="badge-title">RF &amp; RADIO DEVICE BADGE</div>' +
-        '<div class="badge-subtitle">'+esc(emp.site)+'</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="badge-rule"></div>' +
-    '<div class="badge-name">'+esc(emp.name)+'</div>' +
-    '<div class="barcode-wrap"><canvas class="barcode-canvas"></canvas><div class="barcode-id">'+esc(emp.uid)+'</div></div>' +
+    '<div class="badge-header">'+
+      '<div class="badge-logo-block"><img src="'+esc(logo)+'" alt="logo" /><div class="badge-brand">GEODIS</div></div>'+
+      '<div class="badge-title-block">'+
+        '<div class="badge-title">RF &amp; RADIO DEVICE BADGE</div>'+
+        '<div class="badge-subtitle">'+esc(emp.site)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="badge-rule"></div>'+
+    '<div class="badge-name" id="bname_'+esc(emp.uid)+'">'+esc(emp.name)+'</div>'+
+    '<div class="barcode-wrap"><canvas class="barcode-canvas"></canvas><div class="barcode-id">'+esc(emp.uid)+'</div></div>'+
     '<div class="badge-footer">'+esc(emp.footer)+'</div>';
   return badge;
 }
@@ -578,6 +517,16 @@ function drawBarcode(canvas, uid) {
     canvas.style.maxWidth = '197px';
   } catch(e) {}
 }
+function scaleNameFont(badge, name) {
+  const el = badge.querySelector('.badge-name');
+  if (!el) return;
+  // Shrink font for long names so they stay on 2 lines max
+  const len = name.length;
+  if (len > 28) el.style.fontSize = '14px';
+  else if (len > 22) el.style.fontSize = '16px';
+  else if (len > 18) el.style.fontSize = '17px';
+  else el.style.fontSize = '';
+}
 
 /* ══════════════════════════════════
    RENDER PREVIEW
@@ -585,116 +534,100 @@ function drawBarcode(canvas, uid) {
 function rerender() { mode==='single' ? renderSingle() : renderBulk(); }
 
 function renderSingle() {
-  var nameVal = document.getElementById('s-name').value.trim();
-  var name    = nameVal || randomName();
-  var uid     = document.getElementById('s-uid').value.trim() || genUID(name);
-  var site    = document.getElementById('f-site').value;
-  var footer  = document.getElementById('f-footer').value;
-  var urlFld  = document.getElementById('s-logo-url').value.trim();
-  var override = singleLogoOverride || (urlFld && urlFld!=='(uploaded file)' ? urlFld : null);
-  var emp = { name:name, uid:uid, site:site, footer:footer, logoOverride:override };
-  var grid = document.getElementById('cards-grid');
+  const nameVal = document.getElementById('s-name').value.trim();
+  const name    = nameVal || randomName();
+  const uid     = document.getElementById('s-uid').value.trim() || genUID(name);
+  const site    = document.getElementById('f-site').value;
+  const footer  = document.getElementById('f-footer').value;
+  const urlFld  = document.getElementById('s-logo-url').value.trim();
+  const override = singleLogoOverride || (urlFld && urlFld!=='(uploaded file)' ? urlFld : null);
+  const emp = { name, uid, site, footer, logoOverride: override };
+  const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
   if (!nameVal) {
-    var h = document.createElement('div');
+    const h = document.createElement('div');
     h.style.cssText = 'font-size:11px;color:var(--subtle);margin-bottom:8px;width:100%';
     h.textContent = '(random preview — type a name above)';
     grid.appendChild(h);
   }
-  var wrap = document.createElement('div'); wrap.className = 'card-wrap';
-  var lbl  = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
-  var badge = buildBadgeEl(emp);
+  const wrap = document.createElement('div'); wrap.className = 'card-wrap';
+  const lbl  = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
+  const badge = buildBadgeEl(emp);
   wrap.appendChild(lbl); wrap.appendChild(badge); grid.appendChild(wrap);
   drawBarcode(badge.querySelector('.barcode-canvas'), uid);
+  scaleNameFont(badge, name);
 }
 
 function renderBulk() {
-  var raw    = document.getElementById('bulk-csv').value.trim();
-  var site   = document.getElementById('f-site').value;
-  var footer = document.getElementById('f-footer').value;
-  var grid   = document.getElementById('cards-grid');
+  const raw    = document.getElementById('bulk-csv').value.trim();
+  const site   = document.getElementById('f-site').value;
+  const footer = document.getElementById('f-footer').value;
+  const grid   = document.getElementById('cards-grid');
   grid.innerHTML = '';
-  if (!raw) {
-    document.getElementById('bulk-count').textContent = '0';
-    grid.innerHTML = '<div class="empty-state"><div class="ei">🪪</div><p>Paste names above</p></div>';
-    return;
-  }
-  var lines = raw.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if (!raw) { document.getElementById('bulk-count').textContent='0'; grid.innerHTML='<div class="empty-state"><div class="ei">🪪</div><p>Paste names above</p></div>'; return; }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
   document.getElementById('bulk-count').textContent = lines.length;
-  document.getElementById('prev-title').textContent = lines.length+' badge'+(lines.length!==1?'s':'');
-  lines.forEach(function(line) {
-    var parts = line.split(',');
-    var name = parts[0].trim(); if (!name) return;
-    var uid  = parts[1] ? parts[1].trim() : genUID(name);
-    var logoOverride = parts[2] ? parts[2].trim() : null;
-    var emp = { name:name, uid:uid, site:site, footer:footer, logoOverride:logoOverride };
-    var wrap = document.createElement('div'); wrap.className = 'card-wrap';
-    var lbl  = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
-    var badge = buildBadgeEl(emp);
-    wrap.appendChild(lbl); wrap.appendChild(badge);
-    grid.appendChild(wrap);
+  lines.forEach(line => {
+    const parts = line.split(',');
+    const name = parts[0].trim(); if (!name) return;
+    const uid  = parts[1] ? parts[1].trim() : genUID(name);
+    const emp  = { name, uid, site, footer, logoOverride: null };
+    const wrap = document.createElement('div'); wrap.className = 'card-wrap';
+    const lbl  = document.createElement('div'); lbl.className = 'card-lbl'; lbl.textContent = uid;
+    const badge = buildBadgeEl(emp);
+    wrap.appendChild(lbl); wrap.appendChild(badge); grid.appendChild(wrap);
     drawBarcode(badge.querySelector('.barcode-canvas'), uid);
+    scaleNameFont(badge, name);
   });
 }
 
 /* ══════════════════════════════════
-   SAVE TO SUPABASE
+   SAVE EMPLOYEE (local + download)
 ══════════════════════════════════ */
-async function saveToSupabase() {
-  var btn = document.getElementById('save-btn');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  var site   = document.getElementById('f-site').value;
-  var footer = document.getElementById('f-footer').value;
-  var today  = new Date().toLocaleDateString('en-CA');
-  var saved = 0, skipped = 0;
+function saveEmployee() {
+  const site   = document.getElementById('f-site').value;
+  const footer = document.getElementById('f-footer').value;
+  const today  = new Date().toLocaleDateString('en-CA');
+  let saved = 0, skipped = 0;
 
-  try {
-    if (mode === 'single') {
-      var nameVal = document.getElementById('s-name').value.trim();
-      if (!nameVal) { showToast('⚠️ Enter a name first'); return; }
-      var uid = document.getElementById('s-uid').value.trim() || genUID(nameVal);
-      if (libraryData.find(function(e){ return e.uid===uid; })) {
-        showToast('⚠️ '+uid+' already exists'); return;
-      }
-      var urlFld = document.getElementById('s-logo-url').value.trim();
-      var logoOverride = singleLogoOverride || (urlFld && urlFld!=='(uploaded file)' ? urlFld : null);
-      await supa.insert({ name:nameVal, uid:uid, site:site, footer:footer, logoOverride:logoOverride||null, defaultLogo:defaultLogo||null, savedAt:today });
-      saved = 1;
-    } else {
-      var raw = document.getElementById('bulk-csv').value.trim();
-      if (!raw) { showToast('⚠️ No names to save'); return; }
-      var lines = raw.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-      for (var i=0; i<lines.length; i++) {
-        var parts = lines[i].split(',');
-        var name = parts[0].trim(); if (!name) continue;
-        var uid2 = parts[1] ? parts[1].trim() : genUID(name);
-        var logo2 = parts[2] ? parts[2].trim() : null;
-        if (libraryData.find(function(e){ return e.uid===uid2; })) { skipped++; continue; }
-        await supa.insert({ name:name, uid:uid2, site:site, footer:footer, logoOverride:logo2||null, defaultLogo:defaultLogo||null, savedAt:today });
-        saved++;
-      }
-      if (!saved) { showToast('⚠️ All already exist in library'); return; }
-    }
-    showToast('✓ Saved '+saved+' employee'+(saved!==1?'s':''+(skipped?' ('+skipped+' skipped)':'')));
-  } catch(err) {
-    console.error('Save error:', err);
-    showToast('❌ Save failed — check connection');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save to employee library';
+  if (mode === 'single') {
+    const nameVal = document.getElementById('s-name').value.trim();
+    if (!nameVal) { showToast('⚠️ Enter a name first'); return; }
+    const uid = document.getElementById('s-uid').value.trim() || genUID(nameVal);
+    if (libraryData.find(e => e.uid === uid)) { showToast('⚠️ '+uid+' already saved'); return; }
+    const urlFld = document.getElementById('s-logo-url').value.trim();
+    const logoOverride = singleLogoOverride || (urlFld && urlFld!=='(uploaded file)' ? urlFld : null);
+    libraryData.unshift({ id: uuid(), name: nameVal, uid, site, footer, logoOverride: logoOverride||null, savedAt: today });
+    saved = 1;
+  } else {
+    const raw = document.getElementById('bulk-csv').value.trim();
+    if (!raw) { showToast('⚠️ No names to save'); return; }
+    raw.split('\n').map(l=>l.trim()).filter(Boolean).forEach(line => {
+      const parts = line.split(',');
+      const name = parts[0].trim(); if (!name) return;
+      const uid  = parts[1] ? parts[1].trim() : genUID(name);
+      if (libraryData.find(e => e.uid === uid)) { skipped++; return; }
+      libraryData.unshift({ id: uuid(), name, uid, site, footer, logoOverride: null, savedAt: today });
+      saved++;
+    });
+    if (!saved) { showToast('⚠️ All already exist'); return; }
   }
+
+  updateCount();
+  markChanged();
+  // Auto-download updated JSON
+  downloadJSON();
+  showToast('✓ Saved '+saved+' employee'+(saved!==1?'s':'')+(skipped?' · '+skipped+' skipped':'')+' — upload the downloaded file to GitHub');
 }
 
 /* ══════════════════════════════════
-   LIBRARY
+   LIBRARY RENDER
 ══════════════════════════════════ */
 function renderLibrary() {
-  var q = (document.getElementById('lib-search').value||'').toLowerCase();
-  var filtered = libraryData.filter(function(e){
-    return (e.name||'').toLowerCase().includes(q)||(e.uid||'').toLowerCase().includes(q);
-  });
+  const q = (document.getElementById('lib-search').value||'').toLowerCase();
+  const filtered = libraryData.filter(e => (e.name||'').toLowerCase().includes(q)||(e.uid||'').toLowerCase().includes(q));
   updateCount();
-  var grid = document.getElementById('emp-grid');
+  const grid = document.getElementById('emp-grid');
   grid.innerHTML = '';
   if (!libraryData.length) {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">👥</div><p>No saved employees yet</p><small style="margin-top:4px">Create a badge and click Save</small></div>';
@@ -704,11 +637,11 @@ function renderLibrary() {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">🔍</div><p>No results for "'+esc(q)+'"</p></div>';
     updateSelUI(); return;
   }
-  filtered.forEach(function(emp) {
-    var card = document.createElement('div');
+  filtered.forEach(emp => {
+    const card = document.createElement('div');
     card.className = 'emp-card'+(selectedIds.has(emp.id)?' selected':'');
     card.innerHTML =
-      '<div class="emp-card-check"><span class="check-icon">✓</span></div>'+
+      '<div class="emp-card-check">'+(selectedIds.has(emp.id)?'✓':'')+'</div>'+
       '<div class="emp-avatar">'+initials(emp.name)+'</div>'+
       '<div class="emp-name">'+esc(emp.name)+'</div>'+
       '<div class="emp-uid">'+esc(emp.uid)+'</div>'+
@@ -719,7 +652,7 @@ function renderLibrary() {
         '<button class="emp-act-btn" onclick="event.stopPropagation();loadToEditor(\''+emp.id+'\')">✏️ Edit</button>'+
         '<button class="emp-act-btn del" onclick="event.stopPropagation();deleteOne(\''+emp.id+'\')">🗑 Delete</button>'+
       '</div>';
-    card.addEventListener('click', function(){ toggleSelect(emp.id); });
+    card.addEventListener('click', () => toggleSelect(emp.id));
     grid.appendChild(card);
   });
   updateSelUI();
@@ -730,53 +663,45 @@ function renderLibrary() {
 ══════════════════════════════════ */
 function toggleSelect(id) { selectedIds.has(id)?selectedIds.delete(id):selectedIds.add(id); renderLibrary(); }
 function selectAll() {
-  var q = (document.getElementById('lib-search').value||'').toLowerCase();
-  libraryData.filter(function(e){ return (e.name||'').toLowerCase().includes(q)||(e.uid||'').toLowerCase().includes(q); })
-             .forEach(function(e){ selectedIds.add(e.id); });
+  const q = (document.getElementById('lib-search').value||'').toLowerCase();
+  libraryData.filter(e=>(e.name||'').toLowerCase().includes(q)||(e.uid||'').toLowerCase().includes(q)).forEach(e=>selectedIds.add(e.id));
   renderLibrary();
 }
 function selectNone() { selectedIds.clear(); renderLibrary(); }
 function updateSelUI() {
-  var n = selectedIds.size;
+  const n = selectedIds.size;
   document.getElementById('print-sel-btn').style.display  = n>0?'':'none';
   document.getElementById('delete-sel-btn').style.display = n>0?'':'none';
   document.getElementById('hdr-print-sel').style.display  = n>0?'':'none';
-  document.getElementById('hdr-sel-info').style.display   = n>0?'':'none';
-  var sn = document.getElementById('sel-count-num'); if(sn) sn.textContent = n;
-  if(n>0) document.getElementById('hdr-sel-info').textContent = n+' selected';
+  const sn = document.getElementById('sel-count-num'); if(sn) sn.textContent = n;
 }
 
 /* ══════════════════════════════════
    PRINT
 ══════════════════════════════════ */
 function buildPrintHTML(employees) {
-  return employees.map(function(emp) {
-    var activeLogo = emp.logoOverride || emp.defaultLogo || defaultLogo || HARDCODED_LOGO;
-    var cid = 'bc_'+(emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
+  return employees.map(emp => {
+    const logo = emp.logoOverride || emp.defaultLogo || defaultLogo;
+    const cid  = 'bc_'+(emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
+    const nameFontSize = emp.name.length > 28 ? '14px' : emp.name.length > 22 ? '16px' : emp.name.length > 18 ? '17px' : '19px';
     return '<div style="width:60mm;height:80mm;background:#fff;border:3px solid #111;outline:2px solid #111;outline-offset:3px;border-radius:6px;padding:32px 14px 12px;display:flex;flex-direction:column;align-items:center;font-family:Arial,sans-serif;position:relative;page-break-inside:avoid;margin:5px;">'+
       '<div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:38px;height:14px;background:#d4d4d4;border-radius:20px;border:1.5px solid #999;"></div>'+
       '<div style="display:flex;align-items:flex-start;gap:8px;width:100%;margin-bottom:8px;">'+
-        '<img src="'+esc(activeLogo)+'" style="width:42px;height:42px;object-fit:contain;flex-shrink:0" />'+
-        '<div style="flex:1;padding-top:4px;">'+
-          '<div style="font-size:10.5px;font-weight:700;color:#111;line-height:1.3;">RF &amp; RADIO DEVICE BADGE</div>'+
-          '<div style="font-size:9px;color:#444;margin-top:3px;">'+esc(emp.site)+'</div>'+
-        '</div>'+
+        '<img src="'+esc(logo)+'" style="width:42px;height:42px;object-fit:contain;flex-shrink:0" />'+
+        '<div style="flex:1;padding-top:4px;"><div style="font-size:10.5px;font-weight:700;color:#111;">RF &amp; RADIO DEVICE BADGE</div><div style="font-size:9px;color:#444;margin-top:3px;">'+esc(emp.site)+'</div></div>'+
       '</div>'+
       '<div style="width:100%;height:1px;background:#ddd;margin:4px 0 10px;"></div>'+
-      '<div style="font-size:19px;font-weight:700;color:#111;text-align:center;width:100%;margin-bottom:14px;">'+esc(emp.name)+'</div>'+
-      '<div style="display:flex;flex-direction:column;align-items:center;width:100%;">'+
-        '<canvas id="'+cid+'" style="max-width:197px;"></canvas>'+
-        '<div style="font-size:11px;font-weight:700;color:#1A4FA0;letter-spacing:2.5px;margin-top:4px;">'+esc(emp.uid)+'</div>'+
-      '</div>'+
+      '<div style="font-size:'+nameFontSize+';font-weight:700;color:#111;text-align:center;width:100%;margin-bottom:14px;word-break:break-word;overflow-wrap:break-word;line-height:1.25;">'+esc(emp.name)+'</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:center;width:100%;"><canvas id="'+cid+'" style="max-width:197px;"></canvas>'+
+      '<div style="font-size:11px;font-weight:700;color:#1A4FA0;letter-spacing:2.5px;margin-top:4px;">'+esc(emp.uid)+'</div></div>'+
       '<div style="font-size:8px;color:#555;text-align:center;border-top:0.5px solid #ddd;padding-top:8px;margin-top:auto;width:100%;">'+esc(emp.footer)+'</div>'+
     '</div>';
   }).join('');
 }
-
 function doPrint(employees) {
-  var win = window.open('','_blank','width=900,height=700');
-  var bcs = employees.map(function(emp){
-    var cid = 'bc_'+(emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
+  const win = window.open('','_blank','width=900,height=700');
+  const bcs = employees.map(emp=>{
+    const cid='bc_'+(emp.id||emp.uid).replace(/[^a-z0-9]/gi,'_');
     return "try{JsBarcode(document.getElementById('"+cid+"'),'"+emp.uid.replace(/'/g,"\\'")+"',{format:'CODE128',width:1.9,height:68,displayValue:false,margin:0,background:'#ffffff',lineColor:'#000000'});}catch(e){}";
   }).join('\n');
   win.document.write('<!DOCTYPE html><html><head><title>Print Badges</title>'+
@@ -786,27 +711,33 @@ function doPrint(employees) {
     '<script>window.onload=function(){'+bcs+'setTimeout(function(){window.print();},400);};<\/script></body></html>');
   win.document.close();
 }
-function printOne(id) { var e=libraryData.find(function(e){return e.id===id;}); if(e) doPrint([e]); }
-function printSelected() { if(!selectedIds.size) return; doPrint(libraryData.filter(function(e){return selectedIds.has(e.id);})); }
+function printOne(id) { const e=libraryData.find(e=>e.id===id); if(e) doPrint([e]); }
+function printSelected() { if(!selectedIds.size) return; doPrint(libraryData.filter(e=>selectedIds.has(e.id))); }
 
 /* ══════════════════════════════════
    DELETE / EDIT
 ══════════════════════════════════ */
-async function deleteOne(id) {
+function deleteOne(id) {
   if (!confirm('Remove this employee?')) return;
-  try { await supa.remove(id); selectedIds.delete(id); showToast('Deleted'); }
-  catch(e) { showToast('❌ Delete failed'); }
+  libraryData = libraryData.filter(e=>e.id!==id);
+  selectedIds.delete(id);
+  updateCount(); markChanged();
+  downloadJSON();
+  renderLibrary();
+  showToast('Deleted — upload the downloaded file to GitHub to sync');
 }
-async function deleteSelected() {
+function deleteSelected() {
   if (!selectedIds.size) return;
   if (!confirm('Delete '+selectedIds.size+' employee(s)?')) return;
-  try {
-    for (var id of selectedIds) await supa.remove(id);
-    selectedIds.clear(); showToast('Deleted selected employees');
-  } catch(e) { showToast('❌ Delete failed'); }
+  libraryData = libraryData.filter(e=>!selectedIds.has(e.id));
+  selectedIds.clear();
+  updateCount(); markChanged();
+  downloadJSON();
+  renderLibrary();
+  showToast('Deleted — upload the downloaded file to GitHub to sync');
 }
 function loadToEditor(id) {
-  var emp = libraryData.find(function(e){return e.id===id;}); if(!emp) return;
+  const emp = libraryData.find(e=>e.id===id); if(!emp) return;
   showPage('create'); setMode('single');
   document.getElementById('s-name').value   = emp.name||'';
   document.getElementById('s-uid').value    = emp.uid||'';
@@ -818,14 +749,11 @@ function loadToEditor(id) {
 /* ══════════════════════════════════
    INIT
 ══════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', function() {
-  // Set hardcoded logo in UI
+document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('logo-img').src = HARDCODED_LOGO;
-  // Start DB
-  initDB();
+  loadEmployees();
   setTimeout(rerender, 150);
 });
 </script>
-
 </body>
 </html>
